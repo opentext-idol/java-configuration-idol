@@ -1,0 +1,17 @@
+{
+    "authentication": {
+        "method": "autonomy",
+        "community" : {
+            "protocol" : "HTTP",
+            "host" : "localhost",
+            "port" : 9030,
+            "indexProtocol" : "HTTP",
+            "indexPort" : 0,
+            "serviceProtocol" : "HTTP",
+            "servicePort" : 0
+        },
+        "defaultLogin": null,
+        "className": "com.hp.autonomy.frontend.configuration.CommunityAuthentication",
+        "name": "CommunityAuthentication"
+    }
+}

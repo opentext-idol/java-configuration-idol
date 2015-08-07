@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<autnresponse xmlns:autn='http://schemas.autonomy.com/aci/'>
+    <action>GETCHILDREN</action>
+    <response>SUCCESS</response>
+    <responsedata>
+        <autn:name>AXE</autn:name>
+        <autn:host>10.2.1.90</autn:host>
+        <autn:port>9002</autn:port>
+        <autn:serviceport>9003</autn:serviceport>
+        <autn:children>
+            <autn:num_children>0</autn:num_children>
+            <autn:controlled>false</autn:controlled>
+        </autn:children>
+    </responsedata>
+</autnresponse>

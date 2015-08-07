@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<autnresponse xmlns:autn='http://schemas.autonomy.com/aci/'>
+    <action>GETSTATUS</action>
+    <response>SUCCESS</response>
+    <responsedata>
+        <product>ServiceCoordinator</product>
+        <version>10.4.0</version>
+        <build>1079997</build>
+        <hostName>precise64</hostName>
+        <aciport>40200</aciport>
+        <serviceport>40202</serviceport>
+        <indexport>40201</indexport>
+        <directory>/home/vagrant/coordinator</directory>
+        <acithreads>4</acithreads>
+        <numControllers>1</numControllers>
+        <numStatisticsRecords>3220</numStatisticsRecords>
+    </responsedata>
+</autnresponse>
