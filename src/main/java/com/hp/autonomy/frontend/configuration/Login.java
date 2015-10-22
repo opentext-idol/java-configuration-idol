@@ -1,3 +1,8 @@
+/*
+ * Copyright 2013-2015 Hewlett-Packard Development Company, L.P.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License.
+ */
+
 package com.hp.autonomy.frontend.configuration;
 
 import com.autonomy.aci.client.services.AciService;
@@ -12,14 +17,6 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.apache.commons.lang.RandomStringUtils;
-
-/*
- * $Id$
- *
- * Copyright (c) 2013, Autonomy Systems Ltd.
- *
- * Last modified by $Author$ on $Date$
- */
 
 /**
  * Configuration for Login options - how to authenticate and the location of community

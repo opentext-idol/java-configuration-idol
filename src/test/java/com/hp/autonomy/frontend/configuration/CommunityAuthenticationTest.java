@@ -1,3 +1,8 @@
+/*
+ * Copyright 2013-2015 Hewlett-Packard Development Company, L.P.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License.
+ */
+
 package com.hp.autonomy.frontend.configuration;
 
 import com.autonomy.aci.client.transport.AciServerDetails;
@@ -14,13 +19,6 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.fail;
 
-/*
- * $Id:$
- *
- * Copyright (c) 2014, Autonomy Systems Ltd.
- *
- * Last modified by $Author:$ on $Date:$
- */
 public class CommunityAuthenticationTest {
 
     private ObjectMapper objectMapper;
