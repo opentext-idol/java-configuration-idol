@@ -8,11 +8,12 @@ package com.hp.autonomy.frontend.configuration;
 import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactoryImpl;
 import com.autonomy.aci.client.services.StAXProcessor;
-import com.autonomy.test.unit.TestUtils;
-import java.util.List;
+import com.hp.autonomy.test.xml.XmlTestUtils;
+import org.junit.Test;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import org.junit.Test;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -24,7 +25,7 @@ public class SecurityTypeTest {
     public void testSingleSecurityType() throws XMLStreamException {
         final IdolAnnotationsProcessorFactory factory = new IdolAnnotationsProcessorFactoryImpl();
         final StAXProcessor<List<SecurityType>> processor = factory.listProcessorForClass(SecurityType.class);
-        final XMLStreamReader reader = TestUtils.getResourceAsXMLStreamReader("/com/hp/autonomy/frontend/configuration/community-single-security-type.xml");
+        final XMLStreamReader reader = XmlTestUtils.getResourceAsXMLStreamReader("/com/hp/autonomy/frontend/configuration/community-single-security-type.xml");
 
         final List<SecurityType> output = processor.process(reader);
 
@@ -36,7 +37,7 @@ public class SecurityTypeTest {
     public void testMultipleSecurityTypes() throws XMLStreamException {
         final IdolAnnotationsProcessorFactory factory = new IdolAnnotationsProcessorFactoryImpl();
         final StAXProcessor<List<SecurityType>> processor = factory.listProcessorForClass(SecurityType.class);
-        final XMLStreamReader reader = TestUtils.getResourceAsXMLStreamReader("/com/hp/autonomy/frontend/configuration/community-multiple-security-types.xml");
+        final XMLStreamReader reader = XmlTestUtils.getResourceAsXMLStreamReader("/com/hp/autonomy/frontend/configuration/community-multiple-security-types.xml");
 
         final List<SecurityType> output = processor.process(reader);
 

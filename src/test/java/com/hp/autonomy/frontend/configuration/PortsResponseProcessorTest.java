@@ -5,10 +5,11 @@
 
 package com.hp.autonomy.frontend.configuration;
 
-import com.autonomy.test.unit.TestUtils;
+import com.hp.autonomy.test.xml.XmlTestUtils;
+import org.junit.Test;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -19,7 +20,7 @@ public class PortsResponseProcessorTest {
     public void testProcessWithCoordinator() throws XMLStreamException {
         final PortsResponseProcessor portsResponseProcessor = new PortsResponseProcessor("aciport", "serviceport", "indexport");
 
-        final XMLStreamReader xmlStreamReader = TestUtils.getResourceAsXMLStreamReader("/com/hp/autonomy/frontend/configuration/coordinatorGetStatusResponse.xml");
+        final XMLStreamReader xmlStreamReader = XmlTestUtils.getResourceAsXMLStreamReader("/com/hp/autonomy/frontend/configuration/coordinatorGetStatusResponse.xml");
 
         final PortsResponse portsResponse = portsResponseProcessor.process(xmlStreamReader);
 
@@ -32,7 +33,7 @@ public class PortsResponseProcessorTest {
     public void testProcessWithGetChildren() throws XMLStreamException {
         final PortsResponseProcessor portsResponseProcessor = new PortsResponseProcessor("autn:port", "autn:serviceport");
 
-        final XMLStreamReader xmlStreamReader = TestUtils.getResourceAsXMLStreamReader("/com/hp/autonomy/frontend/configuration/getChildrenResponse.xml");
+        final XMLStreamReader xmlStreamReader = XmlTestUtils.getResourceAsXMLStreamReader("/com/hp/autonomy/frontend/configuration/getChildrenResponse.xml");
 
         final PortsResponse portsResponse = portsResponseProcessor.process(xmlStreamReader);
 
