@@ -12,6 +12,9 @@ import com.autonomy.aci.client.util.AciParameters;
 
 import java.util.List;
 
+/**
+ * Default implementation of {@link CommunityService}.
+ */
 public class CommunityServiceImpl implements CommunityService {
 
     private AciService aciService;
@@ -28,10 +31,16 @@ public class CommunityServiceImpl implements CommunityService {
         }
     }
 
+    /**
+     * @param aciService The {@link AciService} to use for interacting with Community
+     */
     public void setAciService(final AciService aciService) {
         this.aciService = aciService;
     }
 
+    /**
+     * @param processorFactory The {@link IdolAnnotationsProcessorFactory} to use for reading Community responses
+     */
     public void setProcessorFactory(final IdolAnnotationsProcessorFactory processorFactory) {
         this.processorFactory = processorFactory;
     }

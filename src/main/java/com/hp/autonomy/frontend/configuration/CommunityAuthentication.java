@@ -7,6 +7,7 @@ package com.hp.autonomy.frontend.configuration;
 
 import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
+import com.autonomy.nonaci.indexing.IndexingService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -17,13 +18,21 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+/**
+ * {@link Authentication} representing a Community server.
+ */
 @Data
 @JsonDeserialize(builder = CommunityAuthentication.Builder.class)
 @JsonTypeName("CommunityAuthentication")
 public class CommunityAuthentication implements Authentication<CommunityAuthentication> {
 
     private final DefaultLogin defaultLogin;
+
+    /**
+     * @return The configuration of the community server
+     */
     private final ServerConfig community;
+
     private final String method;
 
     private CommunityAuthentication(final Builder builder) {
@@ -32,6 +41,9 @@ public class CommunityAuthentication implements Authentication<CommunityAuthenti
         this.method = builder.method;
     }
 
+    /**
+     * @return The security type (repository) used for authentication
+     */
     @Override
     public String getMethod() {
         return method;
@@ -100,6 +112,13 @@ public class CommunityAuthentication implements Authentication<CommunityAuthenti
         return true;
     }
 
+    /**
+     * Checks that the community server details are valid
+     * @param aciService The {@link AciService} to use for validation
+     * @param processorFactory The {@link IdolAnnotationsProcessorFactory} to use for validation
+     * @return A {@link ValidationResult} determining the validity of the server
+     * @see ServerConfig#validate(AciService, IndexingService, IdolAnnotationsProcessorFactory)
+     */
     public ValidationResult<?> validate(final AciService aciService, final IdolAnnotationsProcessorFactory processorFactory) {
         return community.validate(aciService, null, processorFactory);
     }

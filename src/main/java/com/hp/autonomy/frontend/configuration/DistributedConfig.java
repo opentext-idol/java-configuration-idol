@@ -23,6 +23,16 @@ import lombok.experimental.Accessors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * {@link ConfigurationComponent} for representing an IDOL component which:
+ * <ol>
+ *     <li>May be configured to be distributed</li>
+ *     <li>Has an index port which is used by the application</li>
+ * </ol>
+ *
+ * If an IDOL component is only required to be distributed, it is sufficient to use {@link ServerConfig} and configure
+ * the set of product types to include the required distribution component.
+ */
 @Data
 @JsonDeserialize(builder = DistributedConfig.Builder.class)
 @JsonTypeName("DistributedConfig")
@@ -30,12 +40,24 @@ public class DistributedConfig implements ConfigurationComponent {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerConfig.class);
 
+    /**
+     * True if the distributed settings are being used; false otherwise
+     */
     private final Boolean distributed;
 
+    /**
+     * @return The settings for non distributed configuration
+     */
     private final ServerConfig standard;
 
+    /**
+     * @return The settings for ACI distribution
+     */
     private final ServerConfig dih;
 
+    /**
+     * @return The settings for Indexing distribution
+     */
     private final ServerConfig dah;
 
     private DistributedConfig(final Builder builder) {
@@ -45,6 +67,11 @@ public class DistributedConfig implements ConfigurationComponent {
         this.dah = builder.dah;
     }
 
+    /**
+     * Merges this DistributedConfig with another DistributedConfig.
+     * @param distributedConfig The DistributedConfig to merge with.
+     * @return A new DistributedConfig whose settings replace the fields in this that are null with those from distributedConfig
+     */
     public DistributedConfig merge(final DistributedConfig distributedConfig) {
         if (distributedConfig != null) {
             final Builder builder = new Builder();
@@ -60,6 +87,12 @@ public class DistributedConfig implements ConfigurationComponent {
         return this;
     }
 
+    /**
+     * Fetches the port details for the currently configured config
+     * @param aciService The {@link AciService} to use to test the ACI and service ports
+     * @param indexingService The {@link IndexingService} to use to test the index port
+     * @return A DistributedConfig whose index and service ports have been filled in appropriately
+     */
     public DistributedConfig fetchServerDetails(final AciService aciService, final IndexingService indexingService) {
         final Builder builder = new Builder(this);
 
@@ -73,6 +106,10 @@ public class DistributedConfig implements ConfigurationComponent {
         return builder.build();
     }
 
+    /**
+     * @return The {@link AciServerDetails} for the ACI part of the config. If distributed is true these will be the dah
+     * settings, otherwise they will be the standard settings.
+     */
     public AciServerDetails toAciServerDetails() {
         if (distributed) {
             return dah.toAciServerDetails();
@@ -81,6 +118,10 @@ public class DistributedConfig implements ConfigurationComponent {
         }
     }
 
+    /**
+     * @return The {@link ServerDetails} for the indexing part of the config. If distributed is true these will be the dih
+     * settings, otherwise they will be the standard settings.
+     */
     public ServerDetails toServerDetails() {
         if (distributed) {
             return dih.toServerDetails();
@@ -89,6 +130,24 @@ public class DistributedConfig implements ConfigurationComponent {
         }
     }
 
+    /**
+     * Validates the DistributedConfig. If distributed is true, it will only be valid if both the dah and dih are valid.
+     * Otherwise, it will be valid if the standard config is valid.
+     *
+     * If using a DAH this method requires that a call to LanguageSettings will succeed. This requirement may be removed
+     * in a future version.
+     * @param aciService The {@link com.autonomy.aci.client.services.AciService} to use for validation
+     * @param indexingService The {@link com.autonomy.nonaci.indexing.IndexingService} to use for validation. If the server does not support indexing
+     * this may be null
+     * @param processorFactory The {@link IdolAnnotationsProcessorFactory} used to process the responses
+     * @return A validation result which will be:
+     * <ul>
+     *     <li>True if the configuration is valid; or false otherwise</li>
+     *     <li>If the result is invalid because the call to language settings failed, the data will be {@link com.hp.autonomy.frontend.configuration.DistributedConfig.Validation#LANGUAGE_SETTINGS}</li>
+     *     <li>If the result is invalid for any other reason the result will be the same as ServerConfig#validate</li>
+     * </ul>
+     * @see ServerConfig#validate(AciService, IndexingService, IdolAnnotationsProcessorFactory)
+     */
     public ValidationResult<?> validate(final AciService aciService, final IndexingService indexingService, final IdolAnnotationsProcessorFactory processorFactory) {
         try {
             if (distributed) {
@@ -104,6 +163,7 @@ public class DistributedConfig implements ConfigurationComponent {
                     distributedValidationResultDetails.setDihValidationResult(dihValidation);
                 }
 
+                // TODO: it shouldn't be mandatory to run a LanguageSettings check as not all products require it
                 if (dahValidation.isValid()) {
                     try {
                         aciService.executeAction(dah.toAciServerDetails(), new AciParameters("LanguageSettings"), processorFactory.forClass(EmptyResponse.class));
@@ -125,6 +185,13 @@ public class DistributedConfig implements ConfigurationComponent {
         }
     }
 
+    /**
+     *
+     * @param component The name of the configuration section, to be used in case of failure
+     * @return true if all the required settings exist
+     * @throws ConfigException If the ServerConfig is invalid
+     * @see ServerConfig#basicValidate(String)
+     */
     public boolean basicValidate(final String component) throws ConfigException {
         if (distributed) {
             return dih.basicValidate(component) && dah.basicValidate(component);
@@ -164,7 +231,7 @@ public class DistributedConfig implements ConfigurationComponent {
         }
     }
 
-    enum Validation {
+    public enum Validation {
         LANGUAGE_SETTINGS
     }
 

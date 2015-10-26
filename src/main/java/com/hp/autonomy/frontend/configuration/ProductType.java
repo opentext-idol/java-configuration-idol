@@ -5,18 +5,65 @@
 
 package com.hp.autonomy.frontend.configuration;
 
+/**
+ * Enumeration of IDOL components which can be configured. The enum constants correspond to autn:producttypecsv field of
+ * the GetVersion action.
+ */
 public enum ProductType {
 
+    /**
+     * Represents Content/Suir/AXE/DRE
+     */
     AXE("Content"),
+
+    /**
+     * Represents Indextasks/CAP
+     */
     CAP("IndexTasks"),
+
+    /**
+     * Represents Category/Laune/Classserver
+     */
     CLASSSERVER("Category"),
+
+    /**
+     * Represents DAH
+     */
     DAH("DAH"),
+
+    /**
+     * Represents DIH
+     */
     DIH("DIH"),
+
+    /**
+     * Represents IDOL Server
+     */
     IDOLPROXY("IDOL Proxy"),
+
+    /**
+     * Represents QMS
+     */
     QMS("Query Manipulation Service"),
+
+    /**
+     * Represents Coordinator
+     */
     SERVICECOORDINATOR("Coordinator"),
+
+    /**
+     * Represents Statsserver
+     */
     STATS("Stats Server"),
+
+    /**
+     * Represents Community/Nore/UAServer
+     */
     UASERVER("Community"),
+
+    /**
+     * Represents View
+     */
     VIEW("View");
 
     private final String friendlyName;
@@ -25,6 +72,9 @@ public enum ProductType {
         this.friendlyName = friendlyName;
     }
 
+    /**
+     * @return A friendly name for the product which more closely reflects the current branding.
+     */
     public String getFriendlyName() {
         return friendlyName;
     }

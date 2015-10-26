@@ -9,11 +9,20 @@ import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
 import lombok.Setter;
 
+/**
+ * Validator for {@link CommunityAuthentication}
+ */
 public class CommunityAuthenticationValidator implements Validator<CommunityAuthentication> {
 
+    /**
+     * @param The {@link AciService} to use for validation
+     */
     @Setter
     private AciService aciService;
 
+    /**
+     * @param The {@link IdolAnnotationsProcessorFactory} to use for validation
+     */
     @Setter
     private IdolAnnotationsProcessorFactory processorFactory;
 

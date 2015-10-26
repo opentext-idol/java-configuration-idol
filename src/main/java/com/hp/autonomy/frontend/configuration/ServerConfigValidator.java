@@ -18,10 +18,16 @@ public class ServerConfigValidator implements Validator<ServerConfig> {
     private IndexingService indexingService;
     private IdolAnnotationsProcessorFactory processorFactory;
 
+    /**
+     * @param processorFactory The {@link IdolAnnotationsProcessorFactory} to use for validation
+     */
     public void setProcessorFactory(final IdolAnnotationsProcessorFactory processorFactory) {
         this.processorFactory = processorFactory;
     }
 
+    /**
+     * @param aciService The {@link AciService} to use for validation
+     */
     public void setAciService(final AciService aciService) {
         this.aciService = aciService;
     }
