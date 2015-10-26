@@ -187,7 +187,7 @@ public class ServerConfig implements ConfigurationComponent {
     private boolean testServicePortConnection(final AciServerDetails serviceDetails, final AciService aciService) {
         try {
             return aciService.executeAction(serviceDetails, new AciParameters("getstatus"), new NoopProcessor());
-        } catch (Exception e) {
+        } catch (final Exception e) {
             return false;
         }
     }
@@ -227,7 +227,7 @@ public class ServerConfig implements ConfigurationComponent {
         return serverDetails;
     }
 
-    static enum Validation {
+    enum Validation {
         REQUIRED_FIELD_MISSING,
         CONNECTION_ERROR,
         SERVICE_PORT_ERROR,
@@ -241,7 +241,7 @@ public class ServerConfig implements ConfigurationComponent {
         private final Validation validation = Validation.INCORRECT_SERVER_TYPE;
         private final List<String> friendlyNames;
 
-        IncorrectServerType(List<String> friendlyNames) {
+        IncorrectServerType(final List<String> friendlyNames) {
             this.friendlyNames = friendlyNames;
         }
     }
@@ -260,7 +260,7 @@ public class ServerConfig implements ConfigurationComponent {
             // string doesn't matter here as we swallow the exception
             basicValidate(null);
         }
-        catch(ConfigException e) {
+        catch(final ConfigException e) {
             return new ValidationResult<>(false, Validation.REQUIRED_FIELD_MISSING);
         }
 
@@ -270,7 +270,7 @@ public class ServerConfig implements ConfigurationComponent {
         try {
             isCorrectVersion = testServerVersion(aciService, processorFactory);
         }
-        catch(RuntimeException e) {
+        catch(final RuntimeException e) {
             LOGGER.debug("Error validating server version for {}", this.productType);
             LOGGER.debug("", e);
             return new ValidationResult<>(false, Validation.CONNECTION_ERROR);

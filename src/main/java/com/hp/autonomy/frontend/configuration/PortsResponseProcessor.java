@@ -62,7 +62,7 @@ class PortsResponseProcessor extends AbstractStAXProcessor<PortsResponse> {
 
             return response;
         }
-        catch(XMLStreamException e) {
+        catch(final XMLStreamException e) {
             throw new ProcessorException("Error reading ports");
         }
     }

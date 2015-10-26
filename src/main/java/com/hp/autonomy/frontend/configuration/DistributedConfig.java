@@ -94,8 +94,8 @@ public class DistributedConfig implements ConfigurationComponent {
             if(distributed) {
                 final DistributedValidationResultDetails distributedValidationResultDetails = new DistributedValidationResultDetails();
 
-                final ValidationResult dihValidation = dih.validate(aciService, indexingService, processorFactory);
-                final ValidationResult dahValidation = dah.validate(aciService, indexingService, processorFactory);
+                final ValidationResult<?> dihValidation = dih.validate(aciService, indexingService, processorFactory);
+                final ValidationResult<?> dahValidation = dah.validate(aciService, indexingService, processorFactory);
 
                 final boolean dihValid = dihValidation.isValid();
                 boolean dahValid = dahValidation.isValid();
@@ -164,14 +164,14 @@ public class DistributedConfig implements ConfigurationComponent {
         }
     }
 
-    static enum Validation {
-        LANGUAGE_SETTINGS;
+    enum Validation {
+        LANGUAGE_SETTINGS
     }
 
     @Data
     static class DistributedValidationResultDetails {
-        private ValidationResult dihValidationResult;
-        private ValidationResult dahValidationResult;
+        private ValidationResult<?> dihValidationResult;
+        private ValidationResult<?> dahValidationResult;
     }
 
 }

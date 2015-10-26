@@ -30,7 +30,7 @@ public class LoginTest {
     private CasConfig createValidCAS(){
     	final CasConfig.Builder casBuilder = new CasConfig.Builder();
     	casBuilder.setCasServerLoginUrl("http://some.server");
-        casBuilder.setCasServerUrlPrefix("ciccio");
+        casBuilder.setCasServerUrlPrefix("example");
         casBuilder.setServerName("name");
         return casBuilder.build();
     }
@@ -44,7 +44,7 @@ public class LoginTest {
     }
     
     private ServerConfig createValidCommunity(){
-    	return createCustomCommunity("http://ciccio.com", 666, AciServerDetails.TransportProtocol.HTTP);
+    	return createCustomCommunity("http://example.com", 666, AciServerDetails.TransportProtocol.HTTP);
     }
     
     private ServerConfig createCustomCommunity(final String host, final int port, final AciServerDetails.TransportProtocol protocol){

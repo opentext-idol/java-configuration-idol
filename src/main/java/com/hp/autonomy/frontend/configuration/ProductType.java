@@ -21,7 +21,7 @@ public enum ProductType {
 
     private final String friendlyName;
 
-    private ProductType(final String friendlyName) {
+    ProductType(final String friendlyName) {
         this.friendlyName = friendlyName;
     }
 

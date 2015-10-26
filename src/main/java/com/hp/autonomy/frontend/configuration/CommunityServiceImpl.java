@@ -23,7 +23,7 @@ public class CommunityServiceImpl implements CommunityService {
         try {
             return aciService.executeAction(community, new AciParameters("getstatus"),
                     processorFactory.listProcessorForClass(SecurityType.class));
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             return null;
         }
     }
