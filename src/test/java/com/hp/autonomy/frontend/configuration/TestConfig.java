@@ -5,9 +5,6 @@
 
 package com.hp.autonomy.frontend.configuration;
 
-import com.hp.autonomy.frontend.configuration.Authentication;
-import com.hp.autonomy.frontend.configuration.AuthenticationConfig;
-
 class TestConfig implements AuthenticationConfig<TestConfig> {
     private Authentication<?> authentication;
 

@@ -5,8 +5,6 @@
 
 package com.hp.autonomy.frontend.configuration;
 
-import com.hp.autonomy.frontend.configuration.BaseConfigFileService;
-import com.hp.autonomy.frontend.configuration.Config;
 import lombok.extern.slf4j.Slf4j;
 
 /**

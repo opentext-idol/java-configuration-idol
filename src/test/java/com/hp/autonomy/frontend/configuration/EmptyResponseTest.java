@@ -14,7 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.xml.stream.XMLStreamException;
-
 import java.util.List;
 
 import static org.hamcrest.core.Is.is;

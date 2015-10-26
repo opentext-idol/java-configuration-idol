@@ -7,8 +7,6 @@ package com.hp.autonomy.frontend.configuration;
 
 import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
-import com.hp.autonomy.frontend.configuration.ValidationResult;
-import com.hp.autonomy.frontend.configuration.Validator;
 
 /**
  * A validator for {@link Login}

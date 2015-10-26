@@ -8,10 +8,11 @@ package com.hp.autonomy.frontend.configuration;
 import com.autonomy.aci.client.services.ProcessorException;
 import com.autonomy.aci.client.services.impl.AbstractStAXProcessor;
 import com.autonomy.aci.client.services.impl.ErrorProcessor;
-import java.util.Locale;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
+import java.util.Locale;
 
 class PortsResponseProcessor extends AbstractStAXProcessor<PortsResponse> {
 

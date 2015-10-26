@@ -5,8 +5,6 @@
 
 package com.hp.autonomy.frontend.configuration;
 
-import com.hp.autonomy.frontend.configuration.AuthenticatingConfig;
-
 /**
  * Interface representing a config that contains a {@link Login}
  * @param <T> The type of the config.

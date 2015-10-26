@@ -6,6 +6,7 @@
 package com.hp.autonomy.frontend.configuration;
 
 import com.autonomy.aci.client.transport.AciServerDetails;
+
 import java.util.List;
 
 /**
