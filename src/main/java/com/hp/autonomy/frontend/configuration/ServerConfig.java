@@ -5,8 +5,7 @@
 
 package com.hp.autonomy.frontend.configuration;
 
-import com.autonomy.aci.actions.common.GetVersionProcessor;
-import com.autonomy.aci.actions.common.Version;
+import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.transport.AciServerDetails;
 import com.autonomy.aci.client.util.AciParameters;
@@ -255,7 +254,7 @@ public class ServerConfig implements ConfigurationComponent {
      *                        this may be null
      * @return true if the server is valid; false otherwise
      */
-    public ValidationResult<?> validate(final AciService aciService, final IndexingService indexingService) {
+    public ValidationResult<?> validate(final AciService aciService, final IndexingService indexingService, final IdolAnnotationsProcessorFactory processorFactory) {
         // if the host is blank further testing is futile
         try {
             // string doesn't matter here as we swallow the exception
@@ -269,7 +268,7 @@ public class ServerConfig implements ConfigurationComponent {
         final boolean isCorrectVersion;
 
         try {
-            isCorrectVersion = testServerVersion(aciService);
+            isCorrectVersion = testServerVersion(aciService, processorFactory);
         }
         catch(RuntimeException e) {
             LOGGER.debug("Error validating server version for {}", this.productType);
@@ -320,9 +319,9 @@ public class ServerConfig implements ConfigurationComponent {
         return true;
     }
 
-    private boolean testServerVersion(final AciService aciService) {
+    private boolean testServerVersion(final AciService aciService, final IdolAnnotationsProcessorFactory processorFactory) {
         // Community's ProductName is just IDOL, so we need to check the product type
-        final Version version = aciService.executeAction(toAciServerDetails(), new AciParameters("getversion"), new GetVersionProcessor());
+        final GetVersionResponse versionResponse = aciService.executeAction(toAciServerDetails(), new AciParameters("getversion"), processorFactory.forClass(GetVersionResponse.class));
 
         final List<String> productTypeNames = new ArrayList<>(productType.size());
 
@@ -331,7 +330,7 @@ public class ServerConfig implements ConfigurationComponent {
         }
 
         // essentially this is a containsAny
-        return !Collections.disjoint(version.getProductTypes(), productTypeNames);
+        return !Collections.disjoint(versionResponse.getProductTypes(), productTypeNames);
     }
 
     /**

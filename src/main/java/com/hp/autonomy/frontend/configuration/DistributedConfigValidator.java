@@ -5,6 +5,7 @@
 
 package com.hp.autonomy.frontend.configuration;
 
+import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.nonaci.indexing.IndexingService;
 
@@ -12,6 +13,7 @@ public class DistributedConfigValidator implements Validator<DistributedConfig> 
 
     private AciService aciService;
     private IndexingService indexingService;
+    private IdolAnnotationsProcessorFactory processorFactory;
 
     public void setAciService(final AciService aciService) {
         this.aciService = aciService;
@@ -21,9 +23,13 @@ public class DistributedConfigValidator implements Validator<DistributedConfig> 
         this.indexingService = indexingService;
     }
 
+    public void setProcessorFactory(final IdolAnnotationsProcessorFactory processorFactory) {
+        this.processorFactory = processorFactory;
+    }
+
     @Override
     public ValidationResult<?> validate(final DistributedConfig config) {
-        return config.validate(aciService, indexingService);
+        return config.validate(aciService, indexingService, processorFactory);
     }
 
     @Override

@@ -5,9 +5,8 @@
 
 package com.hp.autonomy.frontend.configuration;
 
+import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
-import com.hp.autonomy.frontend.configuration.ValidationResult;
-import com.hp.autonomy.frontend.configuration.Validator;
 import com.autonomy.nonaci.indexing.IndexingService;
 
 /**
@@ -17,6 +16,11 @@ public class ServerConfigValidator implements Validator<ServerConfig> {
 
     private AciService aciService;
     private IndexingService indexingService;
+    private IdolAnnotationsProcessorFactory processorFactory;
+
+    public void setProcessorFactory(final IdolAnnotationsProcessorFactory processorFactory) {
+        this.processorFactory = processorFactory;
+    }
 
     public void setAciService(final AciService aciService) {
         this.aciService = aciService;
@@ -34,7 +38,7 @@ public class ServerConfigValidator implements Validator<ServerConfig> {
 
     @Override
     public ValidationResult<?> validate(final ServerConfig config) {
-        return config.validate(aciService, indexingService);
+        return config.validate(aciService, indexingService, processorFactory);
     }
 
     @Override

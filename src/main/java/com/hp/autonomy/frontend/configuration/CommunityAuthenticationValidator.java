@@ -5,9 +5,8 @@
 
 package com.hp.autonomy.frontend.configuration;
 
+import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
-import com.hp.autonomy.frontend.configuration.ValidationResult;
-import com.hp.autonomy.frontend.configuration.Validator;
 import lombok.Setter;
 
 public class CommunityAuthenticationValidator implements Validator<CommunityAuthentication> {
@@ -15,9 +14,12 @@ public class CommunityAuthenticationValidator implements Validator<CommunityAuth
     @Setter
     private AciService aciService;
 
+    @Setter
+    private IdolAnnotationsProcessorFactory processorFactory;
+
     @Override
     public ValidationResult<?> validate(final CommunityAuthentication config) {
-        return config.validate(aciService);
+        return config.validate(aciService, processorFactory);
     }
 
     @Override

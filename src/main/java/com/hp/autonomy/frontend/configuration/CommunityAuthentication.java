@@ -5,6 +5,7 @@
 
 package com.hp.autonomy.frontend.configuration;
 
+import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -100,8 +101,8 @@ public class CommunityAuthentication implements Authentication<CommunityAuthenti
         return true;
     }
 
-    public ValidationResult<?> validate(final AciService aciService) {
-        return community.validate(aciService, null);
+    public ValidationResult<?> validate(final AciService aciService, final IdolAnnotationsProcessorFactory processorFactory) {
+        return community.validate(aciService, null, processorFactory);
     }
 
     @NoArgsConstructor

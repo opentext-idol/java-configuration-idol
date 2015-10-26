@@ -5,12 +5,9 @@
 
 package com.hp.autonomy.frontend.configuration;
 
+import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.transport.AciServerDetails;
-import com.hp.autonomy.frontend.configuration.CasConfig;
-import com.hp.autonomy.frontend.configuration.ConfigException;
-import com.hp.autonomy.frontend.configuration.UsernameAndPassword;
-import com.hp.autonomy.frontend.configuration.ValidationResult;
 import com.autonomy.nonaci.indexing.IndexingService;
 import org.junit.Before;
 import org.junit.Test;
@@ -113,18 +110,18 @@ public class LoginTest {
     @Test
     public void testValidateWithValidCommunity() {
         final ServerConfig community = mock(ServerConfig.class);
-        Mockito.<ValidationResult<?>>when(community.validate(any(AciService.class), any(IndexingService.class))).thenReturn(new ValidationResult<>(true));
+        Mockito.<ValidationResult<?>>when(community.validate(any(AciService.class), any(IndexingService.class), any(IdolAnnotationsProcessorFactory.class))).thenReturn(new ValidationResult<>(true));
 
         final Login login = new Login.Builder().setMethod("autonomy").setCommunity(community).build();
-        assertTrue(login.validate(null).isValid());
+        assertTrue(login.validate(null, null).isValid());
     }
 
     @Test
     public void testValidateWithInvalidCommunity() {
         final ServerConfig community = mock(ServerConfig.class);
-        Mockito.<ValidationResult<?>>when(community.validate(any(AciService.class), any(IndexingService.class))).thenReturn(new ValidationResult<>(false));
+        Mockito.<ValidationResult<?>>when(community.validate(any(AciService.class), any(IndexingService.class), any(IdolAnnotationsProcessorFactory.class))).thenReturn(new ValidationResult<>(false));
 
         final Login login = new Login.Builder().setMethod("autonomy").setCommunity(community).build();
-        assertFalse(login.validate(null).isValid());
+        assertFalse(login.validate(null, null).isValid());
     }
 }

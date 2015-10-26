@@ -5,12 +5,8 @@
 
 package com.hp.autonomy.frontend.configuration;
 
+import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
-import com.hp.autonomy.frontend.configuration.Authentication;
-import com.hp.autonomy.frontend.configuration.CasConfig;
-import com.hp.autonomy.frontend.configuration.ConfigException;
-import com.hp.autonomy.frontend.configuration.UsernameAndPassword;
-import com.hp.autonomy.frontend.configuration.ValidationResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -110,8 +106,8 @@ public class Login implements Authentication<Login> {
         return RandomStringUtils.random(12, true, true);
     }
 
-    public ValidationResult<?> validate(final AciService aciService) {
-        return community.validate(aciService, null);
+    public ValidationResult<?> validate(final AciService aciService, final IdolAnnotationsProcessorFactory processorFactory) {
+        return community.validate(aciService, null, processorFactory);
     }
 
     @Override

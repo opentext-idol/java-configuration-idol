@@ -5,6 +5,7 @@
 
 package com.hp.autonomy.frontend.configuration;
 
+import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
 import com.hp.autonomy.frontend.configuration.ValidationResult;
 import com.hp.autonomy.frontend.configuration.Validator;
@@ -18,10 +19,11 @@ import com.hp.autonomy.frontend.configuration.Validator;
 public class LoginValidator implements Validator<Login> {
 
     private AciService aciService;
+    private IdolAnnotationsProcessorFactory processorFactory;
 
     @Override
     public ValidationResult<?> validate(final Login login) {
-        return login.validate(aciService);
+        return login.validate(aciService, processorFactory);
     }
 
     @Override
@@ -31,5 +33,9 @@ public class LoginValidator implements Validator<Login> {
 
     public void setAciService(final AciService aciService) {
         this.aciService = aciService;
+    }
+
+    public void setProcessorFactory(final IdolAnnotationsProcessorFactory processorFactory) {
+        this.processorFactory = processorFactory;
     }
 }

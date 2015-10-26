@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<autnresponse xmlns:autn='http://schemas.autonomy.com/aci/'>
+    <action>GETVERSION</action>
+    <response>SUCCESS</response>
+    <responsedata>
+        <autn:version>10.9.0</autn:version>
+        <autn:aciversion>3.5.0.1203395</autn:aciversion>
+        <autn:productname>IDOL Server</autn:productname>
+        <autn:commonname>Content</autn:commonname>
+        <autn:producttypecsv>AXE</autn:producttypecsv>
+        <autn:productUID>3902692372</autn:productUID>
+        <autn:build>1203395</autn:build>
+        <autn:wordsize>64</autn:wordsize>
+        <autn:operatingsystem>Linux</autn:operatingsystem>
+        <autn:compiler>GCC 4.4.7</autn:compiler>
+        <autn:directory>/opt/content</autn:directory>
+        <autn:configpath>/opt/content/content.cfg</autn:configpath>
+        <autn:servertime>
+            <autn:epoch>1445618674</autn:epoch>
+            <autn:string>23 Oct 15 17:44:34</autn:string>
+        </autn:servertime>
+        <autn:performance>
+            <autn:qps>
+                <autn:qps>0.16</autn:qps>
+                <autn:queries>157910</autn:queries>
+                <autn:period>1 weeks, 4 days, 7 hours, 31 mins, 26 secs</autn:period>
+            </autn:qps>
+        </autn:performance>
+        <autn:uptime>
+            <autn:uptime>1 weeks, 4 days, 7 hours, 31 mins, 26 secs</autn:uptime>
+            <autn:seconds>977486</autn:seconds>
+            <autn:starttime>12 Oct 15 10:13:08</autn:starttime>
+        </autn:uptime>
+    </responsedata>
+</autnresponse>

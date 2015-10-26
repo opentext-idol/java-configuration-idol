@@ -5,7 +5,7 @@
 
 package com.hp.autonomy.frontend.configuration;
 
-import com.autonomy.aci.actions.DontCareAsLongAsItsNotAnErrorProcessor;
+import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciErrorException;
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.transport.AciServerDetails;
@@ -89,13 +89,13 @@ public class DistributedConfig implements ConfigurationComponent {
         }
     }
 
-    public ValidationResult<?> validate(final AciService aciService, final IndexingService indexingService) {
+    public ValidationResult<?> validate(final AciService aciService, final IndexingService indexingService, final IdolAnnotationsProcessorFactory processorFactory) {
         try {
             if(distributed) {
                 final DistributedValidationResultDetails distributedValidationResultDetails = new DistributedValidationResultDetails();
 
-                final ValidationResult dihValidation = dih.validate(aciService, indexingService);
-                final ValidationResult dahValidation = dah.validate(aciService, indexingService);
+                final ValidationResult dihValidation = dih.validate(aciService, indexingService, processorFactory);
+                final ValidationResult dahValidation = dah.validate(aciService, indexingService, processorFactory);
 
                 final boolean dihValid = dihValidation.isValid();
                 boolean dahValid = dahValidation.isValid();
@@ -106,7 +106,7 @@ public class DistributedConfig implements ConfigurationComponent {
 
                 if (dahValidation.isValid()) {
                     try {
-                        aciService.executeAction(dah.toAciServerDetails(), new AciParameters("LanguageSettings"), new DontCareAsLongAsItsNotAnErrorProcessor());
+                        aciService.executeAction(dah.toAciServerDetails(), new AciParameters("LanguageSettings"), processorFactory.forClass(EmptyResponse.class));
                     } catch(final AciErrorException e) {
                         dahValid = false;
                         distributedValidationResultDetails.setDahValidationResult(new ValidationResult<>(false, Validation.LANGUAGE_SETTINGS));
@@ -117,7 +117,7 @@ public class DistributedConfig implements ConfigurationComponent {
 
                 return new ValidationResult<Object>(dihValid && dahValid, distributedValidationResultDetails);
             } else {
-                return standard.validate(aciService, indexingService);
+                return standard.validate(aciService, indexingService, processorFactory);
             }
         } catch (final RuntimeException e) {
             LOGGER.debug("Error validating config", e);
