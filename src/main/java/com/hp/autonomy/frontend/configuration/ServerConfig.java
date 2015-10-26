@@ -71,7 +71,7 @@ public class ServerConfig implements ConfigurationComponent {
     }
 
     public ServerConfig merge(final ServerConfig serverConfig) {
-        if(serverConfig != null) {
+        if (serverConfig != null) {
             final Builder builder = new Builder();
 
             builder.setProtocol(this.protocol == null ? serverConfig.protocol : this.protocol);
@@ -124,17 +124,16 @@ public class ServerConfig implements ConfigurationComponent {
 
         try {
             // getStatus doesn't always return ports, but does when an index port is used
-            if(this.indexErrorMessage == null) {
+            if (this.indexErrorMessage == null) {
                 response = aciService.executeAction(this.toAciServerDetails(), new AciParameters("getChildren"), new PortsResponseProcessor("autn:port", "autn:serviceport"));
-            }
-            else {
+            } else {
                 response = aciService.executeAction(this.toAciServerDetails(), new AciParameters("getStatus"), new PortsResponseProcessor("aciport", "serviceport", "indexport"));
             }
         } catch (final RuntimeException e) {
             throw new IllegalArgumentException("Unable to connect to ACI server");
         }
 
-        if(this.indexErrorMessage != null) {
+        if (this.indexErrorMessage != null) {
             final int indexPort = response.getIndexPort();
             final ServerDetails indexDetails = new ServerDetails();
             indexDetails.setHost(this.getHost());
@@ -155,7 +154,7 @@ public class ServerConfig implements ConfigurationComponent {
                 }
             }
 
-            if(!isIndexPortValid) {
+            if (!isIndexPortValid) {
                 throw new IllegalArgumentException("Server does not have a valid index port");
             }
         }
@@ -195,12 +194,10 @@ public class ServerConfig implements ConfigurationComponent {
     private boolean testIndexingConnection(final ServerDetails indexDetails, final IndexingService indexingService, final String errorMessage) {
         try {
             indexingService.executeCommand(indexDetails, new IndexCommandImpl("test"));
-        }
-        catch (final IndexingException e) {
+        } catch (final IndexingException e) {
             // we got back a response from the index port
             return e.getMessage().contains(errorMessage);
-        }
-        catch (final RuntimeException e) {
+        } catch (final RuntimeException e) {
             // any other kind of exception is bad
         }
 
@@ -248,10 +245,9 @@ public class ServerConfig implements ConfigurationComponent {
 
     /**
      * Validates that the required settings are supplied and that the target server is responding
-     *
      * @param aciService The {@link com.autonomy.aci.client.services.AciService} to use for validation
      * @param indexingService The {@link com.autonomy.nonaci.indexing.IndexingService} to use for validation. If the server does not support indexing
-     *                        this may be null
+     * this may be null
      * @return true if the server is valid; false otherwise
      */
     public ValidationResult<?> validate(final AciService aciService, final IndexingService indexingService, final IdolAnnotationsProcessorFactory processorFactory) {
@@ -259,8 +255,7 @@ public class ServerConfig implements ConfigurationComponent {
         try {
             // string doesn't matter here as we swallow the exception
             basicValidate(null);
-        }
-        catch(final ConfigException e) {
+        } catch (final ConfigException e) {
             return new ValidationResult<>(false, Validation.REQUIRED_FIELD_MISSING);
         }
 
@@ -269,17 +264,16 @@ public class ServerConfig implements ConfigurationComponent {
 
         try {
             isCorrectVersion = testServerVersion(aciService, processorFactory);
-        }
-        catch(final RuntimeException e) {
+        } catch (final RuntimeException e) {
             LOGGER.debug("Error validating server version for {}", this.productType);
             LOGGER.debug("", e);
             return new ValidationResult<>(false, Validation.CONNECTION_ERROR);
         }
 
-        if(!isCorrectVersion) {
+        if (!isCorrectVersion) {
             final List<String> friendlyNames = new ArrayList<>();
 
-            for(final ProductType productType : this.productType) {
+            for (final ProductType productType : this.productType) {
                 friendlyNames.add(productType.getFriendlyName());
             }
 
@@ -291,12 +285,11 @@ public class ServerConfig implements ConfigurationComponent {
 
             final boolean result = serverConfig.getServicePort() > 0;
 
-            if(this.indexErrorMessage == null) {
+            if (this.indexErrorMessage == null) {
                 return new ValidationResult<>(result, Validation.SERVICE_PORT_ERROR);
-            }
-            else {
+            } else {
                 return new ValidationResult<>(result && serverConfig.getIndexPort() > 0,
-                        Validation.SERVICE_OR_INDEX_PORT_ERROR);
+                    Validation.SERVICE_OR_INDEX_PORT_ERROR);
             }
 
         } catch (final RuntimeException e) {
@@ -310,8 +303,8 @@ public class ServerConfig implements ConfigurationComponent {
      * @return true if all the required settings exist
      * @throws ConfigException If the ServerConfig is invalid
      */
-    public boolean basicValidate(final String component) throws ConfigException  {
-        if(this.getPort() <= 0 || StringUtils.isBlank(this.getHost())){
+    public boolean basicValidate(final String component) throws ConfigException {
+        if (this.getPort() <= 0 || StringUtils.isBlank(this.getHost())) {
             throw new ConfigException(component,
                 component + " attributes have not been defined.");
         }
@@ -325,7 +318,7 @@ public class ServerConfig implements ConfigurationComponent {
 
         final List<String> productTypeNames = new ArrayList<>(productType.size());
 
-        for(final ProductType productType : this.productType) {
+        for (final ProductType productType : this.productType) {
             productTypeNames.add(productType.name());
         }
 

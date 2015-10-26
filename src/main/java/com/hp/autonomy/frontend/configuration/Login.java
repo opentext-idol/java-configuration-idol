@@ -50,8 +50,8 @@ public class Login implements Authentication<Login> {
     }
 
     @Override
-    public Login merge(final Authentication<?> other)  {
-        if(other instanceof Login) {
+    public Login merge(final Authentication<?> other) {
+        if (other instanceof Login) {
             final Login login = (Login) other;
 
             final Builder builder = new Builder();
@@ -62,8 +62,7 @@ public class Login implements Authentication<Login> {
             builder.setCommunity(this.community == null ? login.community : this.community.merge(login.community));
 
             return builder.build();
-        }
-        else {
+        } else {
             return this;
         }
     }
@@ -112,10 +111,9 @@ public class Login implements Authentication<Login> {
 
     @Override
     public void basicValidate() throws ConfigException {
-        if(this.method.equalsIgnoreCase(LoginTypes.CAS)){
+        if (this.method.equalsIgnoreCase(LoginTypes.CAS)) {
             this.cas.basicValidate();
-        }
-        else if(!this.method.equalsIgnoreCase(LoginTypes.DEFAULT)){
+        } else if (!this.method.equalsIgnoreCase(LoginTypes.DEFAULT)) {
             this.community.basicValidate("Community");
         }
     }
@@ -134,7 +132,8 @@ public class Login implements Authentication<Login> {
         private UsernameAndPassword defaultLogin;
         private ServerConfig community;
 
-        public Builder() {}
+        public Builder() {
+        }
 
         public Builder(final Login login) {
             this.method = login.method;

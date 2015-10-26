@@ -52,17 +52,16 @@ class SetContainingItems<T> extends ArgumentMatcher<Set<? super T>> {
 
     @Override
     public boolean matches(final Object item) {
-        if(!(item instanceof Set)) {
+        if (!(item instanceof Set)) {
             return false;
         }
 
         final Set<?> itemAsSet = (Set<?>) item;
 
-        if(matcher == null) {
+        if (matcher == null) {
             return set.containsAll(itemAsSet);
-        }
-        else {
-            for(final Object setItem : itemAsSet) {
+        } else {
+            for (final Object setItem : itemAsSet) {
                 if (matcher.matches(setItem)) {
                     return true;
                 }

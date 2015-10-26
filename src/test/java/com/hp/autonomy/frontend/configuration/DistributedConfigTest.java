@@ -55,9 +55,9 @@ public class DistributedConfigTest {
         Mockito.<ValidationResult<?>>when(standard.validate(aciService, indexingService, processorFactory)).thenReturn(validationResultOne);
 
         final DistributedConfig distributedConfig = new DistributedConfig.Builder()
-                .setDistributed(false)
-                .setStandard(standard)
-                .build();
+            .setDistributed(false)
+            .setStandard(standard)
+            .build();
 
         final ValidationResult<?> validationResultA = distributedConfig.validate(aciService, indexingService, processorFactory);
 
@@ -77,10 +77,10 @@ public class DistributedConfigTest {
         Mockito.<ValidationResult<?>>when(dih.validate(aciService, indexingService, processorFactory)).thenReturn(validationResultTwo);
 
         final DistributedConfig distributedConfig = new DistributedConfig.Builder()
-                .setDistributed(true)
-                .setDih(dih)
-                .setDah(dah)
-                .build();
+            .setDistributed(true)
+            .setDih(dih)
+            .setDah(dah)
+            .build();
 
         final ValidationResult<?> validationResultDistributed = distributedConfig.validate(aciService, indexingService, processorFactory);
 
@@ -89,10 +89,10 @@ public class DistributedConfigTest {
 
         assertThat(validationResultDistributed, is(valid()));
 
-        final DistributedConfig.DistributedValidationResultDetails validationDetails = (DistributedConfig.DistributedValidationResultDetails)validationResultDistributed.getData();
+        final DistributedConfig.DistributedValidationResultDetails validationDetails = (DistributedConfig.DistributedValidationResultDetails) validationResultDistributed.getData();
 
-        assertThat((ValidationResult<?>)validationDetails.getDahValidationResult(), is(nullValue()));
-        assertThat((ValidationResult<?>)validationDetails.getDihValidationResult(), is(nullValue()));
+        assertThat(validationDetails.getDahValidationResult(), is(nullValue()));
+        assertThat(validationDetails.getDihValidationResult(), is(nullValue()));
     }
 
     @Test
@@ -105,10 +105,10 @@ public class DistributedConfigTest {
         Mockito.<ValidationResult<?>>when(dih.validate(aciService, indexingService, processorFactory)).thenReturn(validationResultFail);
 
         final DistributedConfig distributedConfig = new DistributedConfig.Builder()
-                .setDistributed(true)
-                .setDih(dih)
-                .setDah(dah)
-                .build();
+            .setDistributed(true)
+            .setDih(dih)
+            .setDah(dah)
+            .build();
 
         final ValidationResult<?> validationResultDistributed = distributedConfig.validate(aciService, indexingService, processorFactory);
 
@@ -117,10 +117,10 @@ public class DistributedConfigTest {
 
         assertThat(validationResultDistributed, is(not(valid())));
 
-        final DistributedConfig.DistributedValidationResultDetails validationDetails = (DistributedConfig.DistributedValidationResultDetails)validationResultDistributed.getData();
+        final DistributedConfig.DistributedValidationResultDetails validationDetails = (DistributedConfig.DistributedValidationResultDetails) validationResultDistributed.getData();
 
-        assertThat((ValidationResult<?>)validationDetails.getDahValidationResult(), Matchers.<ValidationResult<?>>is(validationResultFail));
-        assertThat((ValidationResult<?>)validationDetails.getDihValidationResult(), Matchers.<ValidationResult<?>>is(validationResultFail));
+        assertThat(validationDetails.getDahValidationResult(), Matchers.<ValidationResult<?>>is(validationResultFail));
+        assertThat(validationDetails.getDihValidationResult(), Matchers.<ValidationResult<?>>is(validationResultFail));
     }
 
     @Test
@@ -134,10 +134,10 @@ public class DistributedConfigTest {
         Mockito.<ValidationResult<?>>when(dih.validate(aciService, indexingService, processorFactory)).thenReturn(validationResultSuccess);
 
         final DistributedConfig distributedConfig = new DistributedConfig.Builder()
-                .setDistributed(true)
-                .setDih(dih)
-                .setDah(dah)
-                .build();
+            .setDistributed(true)
+            .setDih(dih)
+            .setDah(dah)
+            .build();
 
         final ValidationResult<?> validationResultDistributed = distributedConfig.validate(aciService, indexingService, processorFactory);
 
@@ -146,10 +146,10 @@ public class DistributedConfigTest {
 
         assertThat(validationResultDistributed, is(not(valid())));
 
-        final DistributedConfig.DistributedValidationResultDetails validationDetails = (DistributedConfig.DistributedValidationResultDetails)validationResultDistributed.getData();
+        final DistributedConfig.DistributedValidationResultDetails validationDetails = (DistributedConfig.DistributedValidationResultDetails) validationResultDistributed.getData();
 
-        assertThat((ValidationResult<?>)validationDetails.getDahValidationResult(), Matchers.<ValidationResult<?>>is(validationResultFail));
-        assertThat((ValidationResult<?>)validationDetails.getDihValidationResult(), is(nullValue()));
+        assertThat(validationDetails.getDahValidationResult(), Matchers.<ValidationResult<?>>is(validationResultFail));
+        assertThat(validationDetails.getDihValidationResult(), is(nullValue()));
     }
 
     @Test
@@ -164,10 +164,10 @@ public class DistributedConfigTest {
         Mockito.<ValidationResult<?>>when(dih.validate(aciService, indexingService, processorFactory)).thenReturn(validationResultFail);
 
         final DistributedConfig distributedConfig = new DistributedConfig.Builder()
-                .setDistributed(true)
-                .setDih(dih)
-                .setDah(dah)
-                .build();
+            .setDistributed(true)
+            .setDih(dih)
+            .setDah(dah)
+            .build();
 
         final ValidationResult<?> validationResultDistributed = distributedConfig.validate(aciService, indexingService, processorFactory);
 
@@ -176,10 +176,10 @@ public class DistributedConfigTest {
 
         assertThat(validationResultDistributed, is(not(valid())));
 
-        final DistributedConfig.DistributedValidationResultDetails validationDetails = (DistributedConfig.DistributedValidationResultDetails)validationResultDistributed.getData();
+        final DistributedConfig.DistributedValidationResultDetails validationDetails = (DistributedConfig.DistributedValidationResultDetails) validationResultDistributed.getData();
 
-        assertThat((ValidationResult<?>)validationDetails.getDahValidationResult(), is(nullValue()));
-        assertThat((ValidationResult<?>) validationDetails.getDihValidationResult(), Matchers.<ValidationResult<?>>is(validationResultFail));
+        assertThat(validationDetails.getDahValidationResult(), is(nullValue()));
+        assertThat(validationDetails.getDihValidationResult(), Matchers.<ValidationResult<?>>is(validationResultFail));
     }
 
     @Test
@@ -195,16 +195,16 @@ public class DistributedConfigTest {
         when(dah.toAciServerDetails()).thenReturn(mock(AciServerDetails.class));
 
         when(aciService.executeAction(
-                argThat(any(AciServerDetails.class)),
-                argThat(isSetWithItems(aciParameter("action", "LanguageSettings"))),
-                argThat(any(StAXProcessor.class))
+            argThat(any(AciServerDetails.class)),
+            argThat(isSetWithItems(aciParameter("action", "LanguageSettings"))),
+            argThat(any(StAXProcessor.class))
         )).thenThrow(new AciErrorException());
 
         final DistributedConfig distributedConfig = new DistributedConfig.Builder()
-                .setDistributed(true)
-                .setDih(dih)
-                .setDah(dah)
-                .build();
+            .setDistributed(true)
+            .setDih(dih)
+            .setDah(dah)
+            .build();
 
         final ValidationResult<?> distributedValidationResult = distributedConfig.validate(aciService, indexingService, processorFactory);
 
@@ -215,7 +215,7 @@ public class DistributedConfigTest {
 
         final DistributedConfig.DistributedValidationResultDetails validationDetails = (DistributedConfig.DistributedValidationResultDetails) distributedValidationResult.getData();
 
-        assertThat((ValidationResult<?>) validationDetails.getDahValidationResult(), is(not(valid())));
-        assertThat((ValidationResult<?>) validationDetails.getDihValidationResult(), is(nullValue()));
+        assertThat(validationDetails.getDahValidationResult(), is(not(valid())));
+        assertThat(validationDetails.getDihValidationResult(), is(nullValue()));
     }
 }

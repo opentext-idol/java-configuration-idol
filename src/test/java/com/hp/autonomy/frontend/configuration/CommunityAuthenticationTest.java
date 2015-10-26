@@ -66,15 +66,14 @@ public class CommunityAuthenticationTest {
         final TestConfig testConfig = objectMapper.readValue(inputStream, TestConfig.class);
         final Authentication<?> authentication = testConfig.getAuthentication();
 
-        if(authentication instanceof CommunityAuthentication) {
+        if (authentication instanceof CommunityAuthentication) {
             final CommunityAuthentication casAuthentication = (CommunityAuthentication) authentication;
             final ServerConfig cas = casAuthentication.getCommunity();
 
             assertThat(cas.getHost(), is("localhost"));
             assertThat(cas.getProtocol(), is(AciServerDetails.TransportProtocol.HTTP));
             assertThat(cas.getPort(), is(9030));
-        }
-        else {
+        } else {
             fail("Deserialized class not of correct type");
         }
     }
@@ -84,5 +83,6 @@ public class CommunityAuthenticationTest {
         @JsonSubTypes.Type(CommunityAuthentication.class),
         @JsonSubTypes.Type(CasAuthentication.class)
     })
-    private static class Mixins {}
+    private static class Mixins {
+    }
 }

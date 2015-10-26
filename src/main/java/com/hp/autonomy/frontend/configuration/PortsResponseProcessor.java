@@ -42,27 +42,24 @@ class PortsResponseProcessor extends AbstractStAXProcessor<PortsResponse> {
 
             final PortsResponse response = new PortsResponse();
 
-            while(xmlStreamReader.hasNext()) {
+            while (xmlStreamReader.hasNext()) {
                 final int event = xmlStreamReader.next();
 
-                if(event == XMLEvent.START_ELEMENT) {
+                if (event == XMLEvent.START_ELEMENT) {
                     final String localName = xmlStreamReader.getLocalName().toLowerCase(Locale.US);
 
-                    if(localName.equals(aciPortName)) {
+                    if (localName.equals(aciPortName)) {
                         response.setAciPort(Integer.parseInt(xmlStreamReader.getElementText()));
-                    }
-                    else if(localName.equals(servicePortName)) {
+                    } else if (localName.equals(servicePortName)) {
                         response.setServicePort(Integer.parseInt(xmlStreamReader.getElementText()));
-                    }
-                    else if(localName.equals(indexPortName)) {
+                    } else if (localName.equals(indexPortName)) {
                         response.setIndexPort(Integer.parseInt(xmlStreamReader.getElementText()));
                     }
                 }
             }
 
             return response;
-        }
-        catch(final XMLStreamException e) {
+        } catch (final XMLStreamException e) {
             throw new ProcessorException("Error reading ports");
         }
     }

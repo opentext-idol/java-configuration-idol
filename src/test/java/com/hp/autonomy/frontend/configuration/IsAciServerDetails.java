@@ -32,7 +32,7 @@ class IsAciServerDetails extends ArgumentMatcher<AciServerDetails> {
 
     @Override
     public boolean matches(final Object o) {
-        if(!(o instanceof AciServerDetails)) {
+        if (!(o instanceof AciServerDetails)) {
             return false;
         }
 
@@ -40,11 +40,11 @@ class IsAciServerDetails extends ArgumentMatcher<AciServerDetails> {
 
         boolean result = true;
 
-        if(host != null) {
+        if (host != null) {
             result = host.equals(serverDetails.getHost());
         }
 
-        if(port != -1) {
+        if (port != -1) {
             result = result && port == serverDetails.getPort();
         }
 

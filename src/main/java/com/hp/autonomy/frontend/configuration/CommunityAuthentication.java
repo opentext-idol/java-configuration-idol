@@ -72,7 +72,7 @@ public class CommunityAuthentication implements Authentication<CommunityAuthenti
 
     @Override
     public CommunityAuthentication merge(final Authentication<?> other) {
-        if(other instanceof CommunityAuthentication) {
+        if (other instanceof CommunityAuthentication) {
             final CommunityAuthentication castOther = (CommunityAuthentication) other;
 
             final Builder builder = new Builder(this);
@@ -82,15 +82,14 @@ public class CommunityAuthentication implements Authentication<CommunityAuthenti
             builder.setMethod(this.method == null ? castOther.method : this.method);
 
             return builder.build();
-        }
-        else {
+        } else {
             return this;
         }
     }
 
     @Override
     public void basicValidate() throws ConfigException {
-        if(!LoginTypes.DEFAULT.equalsIgnoreCase(method)) {
+        if (!LoginTypes.DEFAULT.equalsIgnoreCase(method)) {
             community.basicValidate("Community");
         }
     }
@@ -117,13 +116,14 @@ public class CommunityAuthentication implements Authentication<CommunityAuthenti
         private String method;
 
         public Builder(final CommunityAuthentication communityAuthentication) {
-            if(communityAuthentication.defaultLogin != null) {
+            if (communityAuthentication.defaultLogin != null) {
                 this.defaultLogin = communityAuthentication.defaultLogin;
             }
 
             this.community = communityAuthentication.community;
             this.method = communityAuthentication.method;
         }
+
         public CommunityAuthentication build() {
             return new CommunityAuthentication(this);
         }

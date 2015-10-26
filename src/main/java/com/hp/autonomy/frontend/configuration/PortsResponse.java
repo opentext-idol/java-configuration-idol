@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 class PortsResponse {
 
-    private int aciPort = 0,
-                indexPort = 0,
-                servicePort = 0;
+    private int aciPort = 0;
+    private int indexPort = 0;
+    private int servicePort = 0;
 
 }

@@ -337,7 +337,7 @@ public class ServerConfigTest {
 
         @Override
         public boolean matches(final Object argument) {
-            if(!(argument instanceof AciParameter)) {
+            if (!(argument instanceof AciParameter)) {
                 return false;
             }
 
@@ -373,7 +373,7 @@ public class ServerConfigTest {
 
         @Override
         public boolean matches(final Object o) {
-            if(! (o instanceof ServerDetails)) {
+            if (!(o instanceof ServerDetails)) {
                 return false;
             }
 
@@ -381,11 +381,11 @@ public class ServerConfigTest {
 
             boolean result = true;
 
-            if(host != null) {
+            if (host != null) {
                 result = host.equals(serverDetails.getHost());
             }
 
-            if(port != -1) {
+            if (port != -1) {
                 result = result && port == serverDetails.getPort();
             }
 

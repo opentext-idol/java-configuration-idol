@@ -10,20 +10,20 @@ import com.autonomy.aci.client.annotations.IdolField;
 
 /**
  * Class representing an IDOL security type.
- *
+ * <p/>
  * This class is annotated for use with {@link com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory}
  */
 @IdolDocument("securitytype")
 public class SecurityType {
 
-	private String name;
+    private String name;
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	@IdolField("name")
-	public void setName(final String name) {
-		this.name = name;
-	}
+    @IdolField("name")
+    public void setName(final String name) {
+        this.name = name;
+    }
 }

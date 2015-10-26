@@ -46,7 +46,7 @@ public class DistributedConfig implements ConfigurationComponent {
     }
 
     public DistributedConfig merge(final DistributedConfig distributedConfig) {
-        if(distributedConfig != null) {
+        if (distributedConfig != null) {
             final Builder builder = new Builder();
 
             builder.setDistributed(this.distributed == null ? distributedConfig.distributed : this.distributed);
@@ -63,7 +63,7 @@ public class DistributedConfig implements ConfigurationComponent {
     public DistributedConfig fetchServerDetails(final AciService aciService, final IndexingService indexingService) {
         final Builder builder = new Builder(this);
 
-        if(distributed) {
+        if (distributed) {
             builder.setDih(this.dih.fetchServerDetails(aciService, indexingService));
             builder.setDah(this.dah.fetchServerDetails(aciService, indexingService));
         } else {
@@ -74,7 +74,7 @@ public class DistributedConfig implements ConfigurationComponent {
     }
 
     public AciServerDetails toAciServerDetails() {
-        if(distributed) {
+        if (distributed) {
             return dah.toAciServerDetails();
         } else {
             return standard.toAciServerDetails();
@@ -82,7 +82,7 @@ public class DistributedConfig implements ConfigurationComponent {
     }
 
     public ServerDetails toServerDetails() {
-        if(distributed) {
+        if (distributed) {
             return dih.toServerDetails();
         } else {
             return standard.toServerDetails();
@@ -91,7 +91,7 @@ public class DistributedConfig implements ConfigurationComponent {
 
     public ValidationResult<?> validate(final AciService aciService, final IndexingService indexingService, final IdolAnnotationsProcessorFactory processorFactory) {
         try {
-            if(distributed) {
+            if (distributed) {
                 final DistributedValidationResultDetails distributedValidationResultDetails = new DistributedValidationResultDetails();
 
                 final ValidationResult<?> dihValidation = dih.validate(aciService, indexingService, processorFactory);
@@ -100,14 +100,14 @@ public class DistributedConfig implements ConfigurationComponent {
                 final boolean dihValid = dihValidation.isValid();
                 boolean dahValid = dahValidation.isValid();
 
-                if(!dihValidation.isValid()) {
+                if (!dihValidation.isValid()) {
                     distributedValidationResultDetails.setDihValidationResult(dihValidation);
                 }
 
                 if (dahValidation.isValid()) {
                     try {
                         aciService.executeAction(dah.toAciServerDetails(), new AciParameters("LanguageSettings"), processorFactory.forClass(EmptyResponse.class));
-                    } catch(final AciErrorException e) {
+                    } catch (final AciErrorException e) {
                         dahValid = false;
                         distributedValidationResultDetails.setDahValidationResult(new ValidationResult<>(false, Validation.LANGUAGE_SETTINGS));
                     }
@@ -126,7 +126,7 @@ public class DistributedConfig implements ConfigurationComponent {
     }
 
     public boolean basicValidate(final String component) throws ConfigException {
-        if(distributed) {
+        if (distributed) {
             return dih.basicValidate(component) && dah.basicValidate(component);
         } else {
             return standard.basicValidate(component);

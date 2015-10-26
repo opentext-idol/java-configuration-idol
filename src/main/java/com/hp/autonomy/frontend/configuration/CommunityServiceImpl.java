@@ -22,7 +22,7 @@ public class CommunityServiceImpl implements CommunityService {
     public List<SecurityType> getSecurityTypes(final AciServerDetails community) {
         try {
             return aciService.executeAction(community, new AciParameters("getstatus"),
-                    processorFactory.listProcessorForClass(SecurityType.class));
+                processorFactory.listProcessorForClass(SecurityType.class));
         } catch (final RuntimeException e) {
             return null;
         }

@@ -10,7 +10,6 @@ import com.autonomy.aci.client.services.AciService;
 
 /**
  * A validator for {@link Login}
- *
  * @deprecated Use a {@link Validator} of your {@link Authentication} type instead
  */
 @Deprecated

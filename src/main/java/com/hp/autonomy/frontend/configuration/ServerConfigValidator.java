@@ -29,7 +29,6 @@ public class ServerConfigValidator implements Validator<ServerConfig> {
     /**
      * Sets the indexing service to use for validation.  This is an optional dependency, if none of the
      * ACI servers to be validated will have index ports.
-     *
      * @param indexingService The indexing service to use for validation
      */
     public void setIndexingService(final IndexingService indexingService) {
