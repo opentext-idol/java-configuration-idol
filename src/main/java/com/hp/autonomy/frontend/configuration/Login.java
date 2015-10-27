@@ -1,25 +1,18 @@
+/*
+ * Copyright 2013-2015 Hewlett-Packard Development Company, L.P.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License.
+ */
+
 package com.hp.autonomy.frontend.configuration;
 
+import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
-import com.hp.autonomy.frontend.configuration.Authentication;
-import com.hp.autonomy.frontend.configuration.CasConfig;
-import com.hp.autonomy.frontend.configuration.ConfigException;
-import com.hp.autonomy.frontend.configuration.UsernameAndPassword;
-import com.hp.autonomy.frontend.configuration.ValidationResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.apache.commons.lang.RandomStringUtils;
-
-/*
- * $Id$
- *
- * Copyright (c) 2013, Autonomy Systems Ltd.
- *
- * Last modified by $Author$ on $Date$
- */
 
 /**
  * Configuration for Login options - how to authenticate and the location of community
@@ -57,8 +50,8 @@ public class Login implements Authentication<Login> {
     }
 
     @Override
-    public Login merge(final Authentication<?> other)  {
-        if(other instanceof Login) {
+    public Login merge(final Authentication<?> other) {
+        if (other instanceof Login) {
             final Login login = (Login) other;
 
             final Builder builder = new Builder();
@@ -69,8 +62,7 @@ public class Login implements Authentication<Login> {
             builder.setCommunity(this.community == null ? login.community : this.community.merge(login.community));
 
             return builder.build();
-        }
-        else {
+        } else {
             return this;
         }
     }
@@ -113,16 +105,15 @@ public class Login implements Authentication<Login> {
         return RandomStringUtils.random(12, true, true);
     }
 
-    public ValidationResult<?> validate(final AciService aciService) {
-        return community.validate(aciService, null);
+    public ValidationResult<?> validate(final AciService aciService, final IdolAnnotationsProcessorFactory processorFactory) {
+        return community.validate(aciService, null, processorFactory);
     }
 
     @Override
     public void basicValidate() throws ConfigException {
-        if(this.method.equalsIgnoreCase(LoginTypes.CAS)){
+        if (this.method.equalsIgnoreCase(LoginTypes.CAS)) {
             this.cas.basicValidate();
-        }
-        else if(!this.method.equalsIgnoreCase(LoginTypes.DEFAULT)){
+        } else if (!this.method.equalsIgnoreCase(LoginTypes.DEFAULT)) {
             this.community.basicValidate("Community");
         }
     }
@@ -141,7 +132,8 @@ public class Login implements Authentication<Login> {
         private UsernameAndPassword defaultLogin;
         private ServerConfig community;
 
-        public Builder() {}
+        public Builder() {
+        }
 
         public Builder(final Login login) {
             this.method = login.method;

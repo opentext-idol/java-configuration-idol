@@ -1,3 +1,8 @@
+/*
+ * Copyright 2013-2015 Hewlett-Packard Development Company, L.P.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License.
+ */
+
 package com.hp.autonomy.frontend.configuration;
 
 import com.autonomy.aci.client.transport.AciServerDetails;
@@ -27,7 +32,7 @@ class IsAciServerDetails extends ArgumentMatcher<AciServerDetails> {
 
     @Override
     public boolean matches(final Object o) {
-        if(!(o instanceof AciServerDetails)) {
+        if (!(o instanceof AciServerDetails)) {
             return false;
         }
 
@@ -35,11 +40,11 @@ class IsAciServerDetails extends ArgumentMatcher<AciServerDetails> {
 
         boolean result = true;
 
-        if(host != null) {
+        if (host != null) {
             result = host.equals(serverDetails.getHost());
         }
 
-        if(port != -1) {
+        if (port != -1) {
             result = result && port == serverDetails.getPort();
         }
 

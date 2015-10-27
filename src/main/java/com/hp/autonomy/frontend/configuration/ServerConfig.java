@@ -1,7 +1,11 @@
+/*
+ * Copyright 2013-2015 Hewlett-Packard Development Company, L.P.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License.
+ */
+
 package com.hp.autonomy.frontend.configuration;
 
-import com.autonomy.aci.actions.common.GetVersionProcessor;
-import com.autonomy.aci.actions.common.Version;
+import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.transport.AciServerDetails;
 import com.autonomy.aci.client.util.AciParameters;
@@ -44,12 +48,12 @@ public class ServerConfig implements ConfigurationComponent {
     private final int servicePort;
 
     /**
-     * The producttypecsv of the server, used for validation
+     * @return The producttypecsv of the server, used for validation
      */
     private final Set<ProductType> productType;
 
     /**
-     * The error message to expect when testing the index port of the server.  If not defined it is assumed that
+     * @return The error message to expect when testing the index port of the server.  If not defined it is assumed that
      * this server does not support indexing.
      */
     private final String indexErrorMessage;
@@ -66,8 +70,13 @@ public class ServerConfig implements ConfigurationComponent {
         this.indexErrorMessage = builder.getIndexErrorMessage();
     }
 
+    /**
+     * Merges this ServerConfig with another ServerConfig.
+     * @param serverConfig The ServerConfig to merge with.
+     * @return A new ServerConfig whose settings replace the fields in this that are null with those from serverConfig
+     */
     public ServerConfig merge(final ServerConfig serverConfig) {
-        if(serverConfig != null) {
+        if (serverConfig != null) {
             final Builder builder = new Builder();
 
             builder.setProtocol(this.protocol == null ? serverConfig.protocol : this.protocol);
@@ -87,7 +96,8 @@ public class ServerConfig implements ConfigurationComponent {
     }
 
     /**
-     * @param serverDetails The IndexServer to use
+     * Creates a new ServerConfig with the given ServerDetails for indexing
+     * @param serverDetails The ServerDetails to use
      * @return A new ServerConfig with the supplied indexing details
      */
     public ServerConfig withIndexServer(final ServerDetails serverDetails) {
@@ -105,8 +115,9 @@ public class ServerConfig implements ConfigurationComponent {
     }
 
     /**
+     * Fetches the index and service ports from the component
      * @param aciService The {@link AciService} used to discover the ports.
-     * @param indexingService The {@link IndexingService} used to test the index port.
+     * @param indexingService The {@link IndexingService} used to test the index port. This can be null if
      * @return A new ServerConfig with its indexing and service details filled in.
      */
     public ServerConfig fetchServerDetails(final AciService aciService, final IndexingService indexingService) {
@@ -120,17 +131,16 @@ public class ServerConfig implements ConfigurationComponent {
 
         try {
             // getStatus doesn't always return ports, but does when an index port is used
-            if(this.indexErrorMessage == null) {
+            if (this.indexErrorMessage == null) {
                 response = aciService.executeAction(this.toAciServerDetails(), new AciParameters("getChildren"), new PortsResponseProcessor("autn:port", "autn:serviceport"));
-            }
-            else {
+            } else {
                 response = aciService.executeAction(this.toAciServerDetails(), new AciParameters("getStatus"), new PortsResponseProcessor("aciport", "serviceport", "indexport"));
             }
         } catch (final RuntimeException e) {
             throw new IllegalArgumentException("Unable to connect to ACI server");
         }
 
-        if(this.indexErrorMessage != null) {
+        if (this.indexErrorMessage != null) {
             final int indexPort = response.getIndexPort();
             final ServerDetails indexDetails = new ServerDetails();
             indexDetails.setHost(this.getHost());
@@ -151,7 +161,7 @@ public class ServerConfig implements ConfigurationComponent {
                 }
             }
 
-            if(!isIndexPortValid) {
+            if (!isIndexPortValid) {
                 throw new IllegalArgumentException("Server does not have a valid index port");
             }
         }
@@ -183,7 +193,7 @@ public class ServerConfig implements ConfigurationComponent {
     private boolean testServicePortConnection(final AciServerDetails serviceDetails, final AciService aciService) {
         try {
             return aciService.executeAction(serviceDetails, new AciParameters("getstatus"), new NoopProcessor());
-        } catch (Exception e) {
+        } catch (final Exception e) {
             return false;
         }
     }
@@ -191,12 +201,10 @@ public class ServerConfig implements ConfigurationComponent {
     private boolean testIndexingConnection(final ServerDetails indexDetails, final IndexingService indexingService, final String errorMessage) {
         try {
             indexingService.executeCommand(indexDetails, new IndexCommandImpl("test"));
-        }
-        catch (final IndexingException e) {
+        } catch (final IndexingException e) {
             // we got back a response from the index port
             return e.getMessage().contains(errorMessage);
-        }
-        catch (final RuntimeException e) {
+        } catch (final RuntimeException e) {
             // any other kind of exception is bad
         }
 
@@ -223,7 +231,7 @@ public class ServerConfig implements ConfigurationComponent {
         return serverDetails;
     }
 
-    static enum Validation {
+    public enum Validation {
         REQUIRED_FIELD_MISSING,
         CONNECTION_ERROR,
         SERVICE_PORT_ERROR,
@@ -233,30 +241,36 @@ public class ServerConfig implements ConfigurationComponent {
     }
 
     @Data
-    static class IncorrectServerType {
+    public static class IncorrectServerType {
         private final Validation validation = Validation.INCORRECT_SERVER_TYPE;
         private final List<String> friendlyNames;
 
-        IncorrectServerType(List<String> friendlyNames) {
+        IncorrectServerType(final List<String> friendlyNames) {
             this.friendlyNames = friendlyNames;
         }
     }
 
     /**
      * Validates that the required settings are supplied and that the target server is responding
+     * @param aciService The {@link AciService} to use for validation
+     * @param indexingService The {@link IndexingService} to use for validation. If the server does not support indexing
+     * this may be null
+     * @param processorFactory The {@link IdolAnnotationsProcessorFactory}
+     * @return A {@link ValidationResult} which will be
+     * <ul>
+     *     <li>Valid if the server config is valid</li>
+     *     <li>If it is not valid because the given server is not of the require type, the data will be a {@link IncorrectServerType},
+     *     containing a list of valid server types</li>
+     *     <li>If it is invalid for any other reason, the data will be a {@link com.hp.autonomy.frontend.configuration.ServerConfig.Validation}</li>
+     * </ul>
      *
-     * @param aciService The {@link com.autonomy.aci.client.services.AciService} to use for validation
-     * @param indexingService The {@link com.autonomy.nonaci.indexing.IndexingService} to use for validation. If the server does not support indexing
-     *                        this may be null
-     * @return true if the server is valid; false otherwise
      */
-    public ValidationResult<?> validate(final AciService aciService, final IndexingService indexingService) {
+    public ValidationResult<?> validate(final AciService aciService, final IndexingService indexingService, final IdolAnnotationsProcessorFactory processorFactory) {
         // if the host is blank further testing is futile
         try {
             // string doesn't matter here as we swallow the exception
             basicValidate(null);
-        }
-        catch(ConfigException e) {
+        } catch (final ConfigException e) {
             return new ValidationResult<>(false, Validation.REQUIRED_FIELD_MISSING);
         }
 
@@ -264,18 +278,17 @@ public class ServerConfig implements ConfigurationComponent {
         final boolean isCorrectVersion;
 
         try {
-            isCorrectVersion = testServerVersion(aciService);
-        }
-        catch(RuntimeException e) {
+            isCorrectVersion = testServerVersion(aciService, processorFactory);
+        } catch (final RuntimeException e) {
             LOGGER.debug("Error validating server version for {}", this.productType);
             LOGGER.debug("", e);
             return new ValidationResult<>(false, Validation.CONNECTION_ERROR);
         }
 
-        if(!isCorrectVersion) {
+        if (!isCorrectVersion) {
             final List<String> friendlyNames = new ArrayList<>();
 
-            for(final ProductType productType : this.productType) {
+            for (final ProductType productType : this.productType) {
                 friendlyNames.add(productType.getFriendlyName());
             }
 
@@ -287,12 +300,11 @@ public class ServerConfig implements ConfigurationComponent {
 
             final boolean result = serverConfig.getServicePort() > 0;
 
-            if(this.indexErrorMessage == null) {
+            if (this.indexErrorMessage == null) {
                 return new ValidationResult<>(result, Validation.SERVICE_PORT_ERROR);
-            }
-            else {
+            } else {
                 return new ValidationResult<>(result && serverConfig.getIndexPort() > 0,
-                        Validation.SERVICE_OR_INDEX_PORT_ERROR);
+                    Validation.SERVICE_OR_INDEX_PORT_ERROR);
             }
 
         } catch (final RuntimeException e) {
@@ -306,8 +318,8 @@ public class ServerConfig implements ConfigurationComponent {
      * @return true if all the required settings exist
      * @throws ConfigException If the ServerConfig is invalid
      */
-    public boolean basicValidate(final String component) throws ConfigException  {
-        if(this.getPort() <= 0 || StringUtils.isBlank(this.getHost())){
+    public boolean basicValidate(final String component) throws ConfigException {
+        if (this.getPort() <= 0 || StringUtils.isBlank(this.getHost())) {
             throw new ConfigException(component,
                 component + " attributes have not been defined.");
         }
@@ -315,18 +327,18 @@ public class ServerConfig implements ConfigurationComponent {
         return true;
     }
 
-    private boolean testServerVersion(final AciService aciService) {
+    private boolean testServerVersion(final AciService aciService, final IdolAnnotationsProcessorFactory processorFactory) {
         // Community's ProductName is just IDOL, so we need to check the product type
-        final Version version = aciService.executeAction(toAciServerDetails(), new AciParameters("getversion"), new GetVersionProcessor());
+        final GetVersionResponse versionResponse = aciService.executeAction(toAciServerDetails(), new AciParameters("getversion"), processorFactory.listProcessorForClass(GetVersionResponse.class)).get(0);
 
         final List<String> productTypeNames = new ArrayList<>(productType.size());
 
-        for(final ProductType productType : this.productType) {
+        for (final ProductType productType : this.productType) {
             productTypeNames.add(productType.name());
         }
 
         // essentially this is a containsAny
-        return !Collections.disjoint(version.getProductTypes(), productTypeNames);
+        return !Collections.disjoint(versionResponse.getProductTypes(), productTypeNames);
     }
 
     /**
