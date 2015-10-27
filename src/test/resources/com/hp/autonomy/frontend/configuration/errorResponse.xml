@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<autnresponse xmlns:autn='http://schemas.autonomy.com/aci/'><action>QUERY</action><response>ERROR</response><responsedata>
+<error>
+<errorid>AXEQUERY502</errorid>
+<rawerrorid>0x1F6</rawerrorid>
+<errorstring>No valid query text supplied</errorstring>
+<errordescription>All terms were invalid, through being stopwords, too short, or incorrectly formatted</errordescription>
+<errorcode>ERRORPARAMINVALID</errorcode>
+<errortime>26 Oct 15 11:24:53</errortime>
+</error>
+</responsedata></autnresponse>

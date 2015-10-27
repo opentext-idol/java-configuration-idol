@@ -1,26 +1,25 @@
+/*
+ * Copyright 2013-2015 Hewlett-Packard Development Company, L.P.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License.
+ */
+
 package com.hp.autonomy.frontend.configuration;
 
 import com.autonomy.aci.client.transport.AciServerDetails;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.io.InputStream;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.fail;
 
-/*
- * $Id:$
- *
- * Copyright (c) 2014, Autonomy Systems Ltd.
- *
- * Last modified by $Author:$ on $Date:$
- */
 public class CommunityAuthenticationTest {
 
     private ObjectMapper objectMapper;
@@ -67,15 +66,14 @@ public class CommunityAuthenticationTest {
         final TestConfig testConfig = objectMapper.readValue(inputStream, TestConfig.class);
         final Authentication<?> authentication = testConfig.getAuthentication();
 
-        if(authentication instanceof CommunityAuthentication) {
+        if (authentication instanceof CommunityAuthentication) {
             final CommunityAuthentication casAuthentication = (CommunityAuthentication) authentication;
             final ServerConfig cas = casAuthentication.getCommunity();
 
             assertThat(cas.getHost(), is("localhost"));
             assertThat(cas.getProtocol(), is(AciServerDetails.TransportProtocol.HTTP));
             assertThat(cas.getPort(), is(9030));
-        }
-        else {
+        } else {
             fail("Deserialized class not of correct type");
         }
     }
@@ -85,5 +83,6 @@ public class CommunityAuthenticationTest {
         @JsonSubTypes.Type(CommunityAuthentication.class),
         @JsonSubTypes.Type(CasAuthentication.class)
     })
-    private static class Mixins {}
+    private static class Mixins {
+    }
 }

@@ -1,3 +1,8 @@
+/*
+ * Copyright 2013-2015 Hewlett-Packard Development Company, L.P.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License.
+ */
+
 package com.hp.autonomy.frontend.configuration;
 
 import org.hamcrest.Factory;
@@ -47,17 +52,16 @@ class SetContainingItems<T> extends ArgumentMatcher<Set<? super T>> {
 
     @Override
     public boolean matches(final Object item) {
-        if(!(item instanceof Set)) {
+        if (!(item instanceof Set)) {
             return false;
         }
 
         final Set<?> itemAsSet = (Set<?>) item;
 
-        if(matcher == null) {
+        if (matcher == null) {
             return set.containsAll(itemAsSet);
-        }
-        else {
-            for(final Object setItem : itemAsSet) {
+        } else {
+            for (final Object setItem : itemAsSet) {
                 if (matcher.matches(setItem)) {
                     return true;
                 }

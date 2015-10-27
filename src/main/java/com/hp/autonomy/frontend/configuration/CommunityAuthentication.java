@@ -1,6 +1,13 @@
+/*
+ * Copyright 2013-2015 Hewlett-Packard Development Company, L.P.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License.
+ */
+
 package com.hp.autonomy.frontend.configuration;
 
+import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
+import com.autonomy.nonaci.indexing.IndexingService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -11,12 +18,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-/*
- * $Id:$
- *
- * Copyright (c) 2014, Autonomy Systems Ltd.
- *
- * Last modified by $Author:$ on $Date:$
+/**
+ * {@link Authentication} representing a Community server.
  */
 @Data
 @JsonDeserialize(builder = CommunityAuthentication.Builder.class)
@@ -24,7 +27,12 @@ import lombok.experimental.Accessors;
 public class CommunityAuthentication implements Authentication<CommunityAuthentication> {
 
     private final DefaultLogin defaultLogin;
+
+    /**
+     * @return The configuration of the community server
+     */
     private final ServerConfig community;
+
     private final String method;
 
     private CommunityAuthentication(final Builder builder) {
@@ -33,6 +41,9 @@ public class CommunityAuthentication implements Authentication<CommunityAuthenti
         this.method = builder.method;
     }
 
+    /**
+     * @return The security type (repository) used for authentication
+     */
     @Override
     public String getMethod() {
         return method;
@@ -73,7 +84,7 @@ public class CommunityAuthentication implements Authentication<CommunityAuthenti
 
     @Override
     public CommunityAuthentication merge(final Authentication<?> other) {
-        if(other instanceof CommunityAuthentication) {
+        if (other instanceof CommunityAuthentication) {
             final CommunityAuthentication castOther = (CommunityAuthentication) other;
 
             final Builder builder = new Builder(this);
@@ -83,15 +94,14 @@ public class CommunityAuthentication implements Authentication<CommunityAuthenti
             builder.setMethod(this.method == null ? castOther.method : this.method);
 
             return builder.build();
-        }
-        else {
+        } else {
             return this;
         }
     }
 
     @Override
     public void basicValidate() throws ConfigException {
-        if(!LoginTypes.DEFAULT.equalsIgnoreCase(method)) {
+        if (!LoginTypes.DEFAULT.equalsIgnoreCase(method)) {
             community.basicValidate("Community");
         }
     }
@@ -102,8 +112,15 @@ public class CommunityAuthentication implements Authentication<CommunityAuthenti
         return true;
     }
 
-    public ValidationResult<?> validate(final AciService aciService) {
-        return community.validate(aciService, null);
+    /**
+     * Checks that the community server details are valid
+     * @param aciService The {@link AciService} to use for validation
+     * @param processorFactory The {@link IdolAnnotationsProcessorFactory} to use for validation
+     * @return A {@link ValidationResult} determining the validity of the server
+     * @see ServerConfig#validate(AciService, IndexingService, IdolAnnotationsProcessorFactory)
+     */
+    public ValidationResult<?> validate(final AciService aciService, final IdolAnnotationsProcessorFactory processorFactory) {
+        return community.validate(aciService, null, processorFactory);
     }
 
     @NoArgsConstructor
@@ -118,13 +135,14 @@ public class CommunityAuthentication implements Authentication<CommunityAuthenti
         private String method;
 
         public Builder(final CommunityAuthentication communityAuthentication) {
-            if(communityAuthentication.defaultLogin != null) {
+            if (communityAuthentication.defaultLogin != null) {
                 this.defaultLogin = communityAuthentication.defaultLogin;
             }
 
             this.community = communityAuthentication.community;
             this.method = communityAuthentication.method;
         }
+
         public CommunityAuthentication build() {
             return new CommunityAuthentication(this);
         }

@@ -1,14 +1,9 @@
-package com.hp.autonomy.frontend.configuration;
-
 /*
- * $Id:$
- *
- * Copyright (c) 2013, Autonomy Systems Ltd.
- *
- * Last modified by $Author:$ on $Date:$
+ * Copyright 2013-2015 Hewlett-Packard Development Company, L.P.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License.
  */
 
-import com.hp.autonomy.frontend.configuration.AuthenticatingConfig;
+package com.hp.autonomy.frontend.configuration;
 
 /**
  * Interface representing a config that contains a {@link Login}
