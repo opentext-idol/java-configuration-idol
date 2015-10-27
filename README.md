@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/hpautonomy/java-configuration-idol.svg?branch=master)](https://travis-ci.org/hpautonomy/java-configuration-idol)
 
-IDOL implementation of the HP Autonomy Configuration API.  Contains code for configuring IDOL components and authenticating using Community.
+IDOL implementation of the HP Autonomy Configuration API. Contains code for configuring IDOL components and authenticating using Community.
 
 This repo uses git-flow. develop is the development branch. master is the last known good branch.
 
