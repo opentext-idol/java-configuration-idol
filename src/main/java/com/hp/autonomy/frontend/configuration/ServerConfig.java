@@ -329,7 +329,7 @@ public class ServerConfig implements ConfigurationComponent {
 
     private boolean testServerVersion(final AciService aciService, final IdolAnnotationsProcessorFactory processorFactory) {
         // Community's ProductName is just IDOL, so we need to check the product type
-        final GetVersionResponse versionResponse = aciService.executeAction(toAciServerDetails(), new AciParameters("getversion"), processorFactory.forClass(GetVersionResponse.class));
+        final GetVersionResponse versionResponse = aciService.executeAction(toAciServerDetails(), new AciParameters("getversion"), processorFactory.listProcessorForClass(GetVersionResponse.class)).get(0);
 
         final List<String> productTypeNames = new ArrayList<>(productType.size());
 

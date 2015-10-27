@@ -47,8 +47,8 @@ public class ServerConfigTest {
         indexingService = mock(IndexingService.class);
         processorFactory = mock(IdolAnnotationsProcessorFactory.class);
 
-        when(processorFactory.forClass(GetVersionResponse.class)).thenReturn(mock(StAXProcessor.class));
-        when(processorFactory.forClass(EmptyResponse.class)).thenReturn(mock(StAXProcessor.class));
+        when(processorFactory.listProcessorForClass(GetVersionResponse.class)).thenReturn(mock(StAXProcessor.class));
+        when(processorFactory.listProcessorForClass(EmptyResponse.class)).thenReturn(mock(StAXProcessor.class));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class ServerConfigTest {
             argThat(new IsAciServerDetails("example.com", 6666)),
             argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
             argThat(any(StAXProcessor.class))
-        )).thenReturn(getVersionResponse);
+        )).thenReturn(Collections.singletonList(getVersionResponse));
 
         when(aciService.executeAction(
             argThat(new IsAciServerDetails("example.com", 6666)),
@@ -99,7 +99,7 @@ public class ServerConfigTest {
             argThat(new IsAciServerDetails("example.com", 7666)),
             argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
             argThat(any(StAXProcessor.class))
-        )).thenReturn(getVersionResponse);
+        )).thenReturn(Collections.singletonList(getVersionResponse));
 
         when(aciService.executeAction(
             argThat(new IsAciServerDetails("example.com", 7666)),
@@ -140,7 +140,7 @@ public class ServerConfigTest {
             argThat(new IsAciServerDetails("example.com", 7666)),
             argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
             argThat(any(StAXProcessor.class))
-        )).thenReturn(getVersionResponse);
+        )).thenReturn(Collections.singletonList(getVersionResponse));
 
         when(aciService.executeAction(
             argThat(new IsAciServerDetails("example.com", 7666)),
@@ -181,7 +181,7 @@ public class ServerConfigTest {
             argThat(new IsAciServerDetails("example.com", 6666)),
             argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
             argThat(any(StAXProcessor.class))
-        )).thenReturn(getVersionResponse);
+        )).thenReturn(Collections.singletonList(getVersionResponse));
 
         // no further stubbing required because we won't get that far
 
@@ -208,7 +208,7 @@ public class ServerConfigTest {
             argThat(new IsAciServerDetails("example.com", 6666)),
             argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
             argThat(any(StAXProcessor.class))
-        )).thenReturn(getVersionResponse);
+        )).thenReturn(Collections.singletonList(getVersionResponse));
 
         when(aciService.executeAction(
             argThat(new IsAciServerDetails("example.com", 6666)),
@@ -241,7 +241,7 @@ public class ServerConfigTest {
             argThat(new IsAciServerDetails("example.com", 7666)),
             argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
             argThat(any(StAXProcessor.class))
-        )).thenReturn(getVersionResponse);
+        )).thenReturn(Collections.singletonList(getVersionResponse));
 
         when(aciService.executeAction(
             argThat(new IsAciServerDetails("example.com", 7666)),
@@ -297,7 +297,7 @@ public class ServerConfigTest {
             argThat(new IsAciServerDetails("example.com", 7666)),
             argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
             argThat(any(StAXProcessor.class))
-        )).thenReturn(getVersionResponse);
+        )).thenReturn(Collections.singletonList(getVersionResponse));
 
         when(aciService.executeAction(
             argThat(new IsAciServerDetails("example.com", 7666)),

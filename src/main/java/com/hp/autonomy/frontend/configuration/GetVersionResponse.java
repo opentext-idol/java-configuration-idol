@@ -17,7 +17,7 @@ import java.util.Set;
 
 @IdolDocument("responsedata")
 @Data
-class GetVersionResponse {
+public class GetVersionResponse {
 
     private final Set<String> productTypes;
 
@@ -27,18 +27,18 @@ class GetVersionResponse {
 
     @IdolDocument("responsedata")
     @IdolBuilder
-    static class Builder {
+    public static class Builder {
 
         private Set<String> productTypes;
 
         @IdolField("autn:producttypecsv")
-        Builder setProductTypes(final String productTypes) {
+        public Builder setProductTypes(final String productTypes) {
             this.productTypes = new HashSet<>(Arrays.asList(productTypes.split(",")));
             return this;
         }
 
         @IdolBuilderBuild
-        GetVersionResponse build() {
+        public GetVersionResponse build() {
             return new GetVersionResponse(productTypes);
         }
 

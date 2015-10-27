@@ -43,8 +43,8 @@ public class DistributedConfigTest {
         indexingService = mock(IndexingService.class);
         processorFactory = mock(IdolAnnotationsProcessorFactory.class);
 
-        when(processorFactory.forClass(EmptyResponse.class)).thenReturn(mock(StAXProcessor.class));
-        when(processorFactory.forClass(GetVersionResponse.class)).thenReturn(mock(StAXProcessor.class));
+        when(processorFactory.listProcessorForClass(EmptyResponse.class)).thenReturn(mock(StAXProcessor.class));
+        when(processorFactory.listProcessorForClass(GetVersionResponse.class)).thenReturn(mock(StAXProcessor.class));
     }
 
     @Test

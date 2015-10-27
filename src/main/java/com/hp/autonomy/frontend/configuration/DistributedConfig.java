@@ -166,7 +166,7 @@ public class DistributedConfig implements ConfigurationComponent {
                 // TODO: it shouldn't be mandatory to run a LanguageSettings check as not all products require it
                 if (dahValidation.isValid()) {
                     try {
-                        aciService.executeAction(dah.toAciServerDetails(), new AciParameters("LanguageSettings"), processorFactory.forClass(EmptyResponse.class));
+                        aciService.executeAction(dah.toAciServerDetails(), new AciParameters("LanguageSettings"), processorFactory.listProcessorForClass(EmptyResponse.class));
                     } catch (final AciErrorException e) {
                         dahValid = false;
                         distributedValidationResultDetails.setDahValidationResult(new ValidationResult<>(false, Validation.LANGUAGE_SETTINGS));
