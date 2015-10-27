@@ -70,14 +70,14 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:hpautonomy/foss-master-pom.git</connection>
-        <developerConnection>scm:git:git@github.com:hpautonomy/foss-master-pom.git</developerConnection>
-        <url>git@github.com:hpautonomy/foss-master-pom.git</url>
+        <connection>scm:git:git@github.com:hpautonomy/java-configuration-idol.git</connection>
+        <developerConnection>scm:git:git@github.com:hpautonomy/java-configuration-idol.git</developerConnection>
+        <url>git@github.com:hpautonomy/java-configuration-idol.git</url>
     </scm>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/hpautonomy/foss-master-pom/issues</url>
+        <url>https://github.com/hpautonomy/java-configuration-idol/issues</url>
     </issueManagement>
 
     <dependencies>
