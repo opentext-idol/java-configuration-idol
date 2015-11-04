@@ -50,14 +50,16 @@
             <email>daniel.grayling@hpe.com</email>
             <organization>HP</organization>
             <organizationUrl>http://www.hp.com</organizationUrl>
-        </developer><developer>
+        </developer>
+        <developer>
             <name>Brian Beckett</name>
             <email>brian.beckett@hpe.com</email>
             <organization>HP</organization>
             <organizationUrl>http://www.hp.com</organizationUrl>
-        </developer><developer>
+        </developer>
+        <developer>
             <name>Liam Goodacre</name>
-            <email>daniel.grayling@hpe.com</email>
+            <email>liam.goodacre@hpe.com</email>
             <organization>HP</organization>
             <organizationUrl>http://www.hp.com</organizationUrl>
         </developer>
