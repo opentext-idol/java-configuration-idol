@@ -14,6 +14,7 @@ import com.autonomy.nonaci.indexing.IndexCommand;
 import com.autonomy.nonaci.indexing.IndexingException;
 import com.autonomy.nonaci.indexing.IndexingService;
 import lombok.extern.slf4j.Slf4j;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Factory;
 import org.junit.Before;
 import org.junit.Test;
@@ -318,6 +319,75 @@ public class ServerConfigTest {
             .build();
 
         assertThat(serverConfig.validate(aciService, null, processorFactory), is(valid()));
+    }
+
+    @Test
+    public void testValidateWithProductTypeRegex() {
+        final GetVersionResponse getVersionResponse = new GetVersionResponse.Builder()
+            .setProductTypes("FILESYSTEMCONNECTOR")
+            .build();
+
+        when(aciService.executeAction(
+            argThat(new IsAciServerDetails("example.com", 7008)),
+            argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
+            argThat(any(StAXProcessor.class))
+        )).thenReturn(Collections.singletonList(getVersionResponse));
+
+        when(aciService.executeAction(
+            argThat(new IsAciServerDetails("example.com", 7008)),
+            argThat(isSetWithItems(aciParameter("action", "GetChildren"))),
+            argThat(any(PortsResponseProcessor.class))
+        )).thenReturn(new PortsResponse(7008, 0, 7010));
+
+        when(aciService.executeAction(
+            argThat(new IsAciServerDetails("example.com", 7010)),
+            argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
+            argThat(any(NoopProcessor.class))
+        )).thenReturn(true);
+
+        final ServerConfig serverConfig = new ServerConfig.Builder()
+            .setHost("example.com")
+            .setPort(7008)
+            .setProductTypeRegex(".*?CONNECTOR")
+            .build();
+
+        assertThat(serverConfig.validate(aciService, null, processorFactory), is(valid()));
+    }
+
+    @Test
+    public void testValidateWithInvalidProductTypeRegex() {
+        final GetVersionResponse getVersionResponse = new GetVersionResponse.Builder()
+            .setProductTypes("FILESYSTEMCONNECTOR")
+            .build();
+
+        when(aciService.executeAction(
+            argThat(new IsAciServerDetails("example.com", 7008)),
+            argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
+            argThat(any(StAXProcessor.class))
+        )).thenReturn(Collections.singletonList(getVersionResponse));
+
+        when(aciService.executeAction(
+            argThat(new IsAciServerDetails("example.com", 7008)),
+            argThat(isSetWithItems(aciParameter("action", "GetChildren"))),
+            argThat(any(PortsResponseProcessor.class))
+        )).thenReturn(new PortsResponse(7008, 0, 7010));
+
+        when(aciService.executeAction(
+            argThat(new IsAciServerDetails("example.com", 7010)),
+            argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
+            argThat(any(NoopProcessor.class))
+        )).thenReturn(true);
+
+        final ServerConfig serverConfig = new ServerConfig.Builder()
+            .setHost("example.com")
+            .setPort(7008)
+            .setProductTypeRegex(".*?SERVER")
+            .build();
+
+        final ValidationResult<?> validationResult = serverConfig.validate(aciService, null, processorFactory);
+
+        assertThat(validationResult, is(not(valid())));
+        assertThat(validationResult.getData(), CoreMatchers.<Object>is(ServerConfig.Validation.REGULAR_EXPRESSION_MATCH_ERROR));
     }
 
     static class IsAciParameter extends ArgumentMatcher<AciParameter> {
