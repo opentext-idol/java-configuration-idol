@@ -1,6 +1,6 @@
 # HP Autonomy Configuration API - IDOL Implementation
 
-[![Build Status](https://travis-ci.org/hpautonomy/java-configuration-idol.svg?branch=master)](https://travis-ci.org/hpautonomy/java-configuration-idol)
+[![Build Status](https://travis-ci.org/hpe-idol/java-configuration-idol.svg?branch=master)](https://travis-ci.org/hpe-idol/java-configuration-idol)
 
 IDOL implementation of the HP Autonomy Configuration API. Contains code for configuring IDOL components and authenticating using Community.
 
