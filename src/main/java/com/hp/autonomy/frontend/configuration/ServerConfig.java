@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Configuration for an ACI server, which can also include index and service ports.
@@ -58,6 +59,11 @@ public class ServerConfig implements ConfigurationComponent {
      */
     private final String indexErrorMessage;
 
+    /**
+     * @return A Pattern used to match the product type. Useful for connectors.
+     */
+    private final Pattern productTypeRegex;
+
     private ServerConfig(final Builder builder) {
         this.protocol = builder.getProtocol();
         this.host = builder.getHost();
@@ -68,6 +74,13 @@ public class ServerConfig implements ConfigurationComponent {
         this.serviceProtocol = builder.getServiceProtocol();
         this.productType = builder.getProductType();
         this.indexErrorMessage = builder.getIndexErrorMessage();
+
+        if (builder.productTypeRegex == null) {
+            this.productTypeRegex = null;
+        }
+        else {
+            this.productTypeRegex = Pattern.compile(builder.productTypeRegex);
+        }
     }
 
     /**
@@ -237,7 +250,8 @@ public class ServerConfig implements ConfigurationComponent {
         SERVICE_PORT_ERROR,
         SERVICE_OR_INDEX_PORT_ERROR,
         FETCH_PORT_ERROR,
-        INCORRECT_SERVER_TYPE
+        INCORRECT_SERVER_TYPE,
+        REGULAR_EXPRESSION_MATCH_ERROR
     }
 
     @Data
@@ -286,13 +300,19 @@ public class ServerConfig implements ConfigurationComponent {
         }
 
         if (!isCorrectVersion) {
-            final List<String> friendlyNames = new ArrayList<>();
+            if (productTypeRegex == null) {
+                final List<String> friendlyNames = new ArrayList<>();
 
-            for (final ProductType productType : this.productType) {
-                friendlyNames.add(productType.getFriendlyName());
+                for (final ProductType productType : this.productType) {
+                    friendlyNames.add(productType.getFriendlyName());
+                }
+
+                return new ValidationResult<>(false, new IncorrectServerType(friendlyNames));
             }
-
-            return new ValidationResult<>(false, new IncorrectServerType(friendlyNames));
+            else {
+                // can't use friendly names for regex
+                return new ValidationResult<Object>(false, Validation.REGULAR_EXPRESSION_MATCH_ERROR);
+            }
         }
 
         try {
@@ -331,14 +351,27 @@ public class ServerConfig implements ConfigurationComponent {
         // Community's ProductName is just IDOL, so we need to check the product type
         final GetVersionResponse versionResponse = aciService.executeAction(toAciServerDetails(), new AciParameters("getversion"), processorFactory.listProcessorForClass(GetVersionResponse.class)).get(0);
 
-        final List<String> productTypeNames = new ArrayList<>(productType.size());
+        final Set<String> serverProductTypes = versionResponse.getProductTypes();
 
-        for (final ProductType productType : this.productType) {
-            productTypeNames.add(productType.name());
+        if (productTypeRegex == null) {
+            final List<String> productTypeNames = new ArrayList<>(productType.size());
+
+            for (final ProductType productType : this.productType) {
+                productTypeNames.add(productType.name());
+            }
+
+            // essentially this is a containsAny
+            return !Collections.disjoint(serverProductTypes, productTypeNames);
         }
+        else {
+            for (final String serverProductType : serverProductTypes) {
+                if (productTypeRegex.matcher(serverProductType).matches()) {
+                    return true;
+                }
+            }
 
-        // essentially this is a containsAny
-        return !Collections.disjoint(versionResponse.getProductTypes(), productTypeNames);
+            return false;
+        }
     }
 
     /**
@@ -368,6 +401,7 @@ public class ServerConfig implements ConfigurationComponent {
         private int servicePort;
         private Set<ProductType> productType;
         private String indexErrorMessage;
+        private String productTypeRegex;
 
         public ServerConfig build() {
             return new ServerConfig(this);
