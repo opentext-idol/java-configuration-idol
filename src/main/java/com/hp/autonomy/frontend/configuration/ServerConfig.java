@@ -101,6 +101,7 @@ public class ServerConfig implements ConfigurationComponent {
             builder.setServiceProtocol(this.serviceProtocol == null ? serverConfig.serviceProtocol : this.serviceProtocol);
             builder.setProductType(this.productType == null ? serverConfig.productType : this.productType);
             builder.setIndexErrorMessage(this.indexErrorMessage == null ? serverConfig.indexErrorMessage : this.indexErrorMessage);
+            builder.setProductTypeRegex(this.productTypeRegex == null ? serverConfig.productTypeRegex : this.productTypeRegex);
 
             return builder.build();
         }
@@ -402,6 +403,19 @@ public class ServerConfig implements ConfigurationComponent {
         private Set<ProductType> productType;
         private String indexErrorMessage;
         private String productTypeRegex;
+
+        public Builder setProductTypeRegex(final String productTypeRegex) {
+            this.productTypeRegex = productTypeRegex;
+            return this;
+        }
+
+        public Builder setProductTypeRegex(final Pattern productTypeRegex) {
+            if (productTypeRegex != null) {
+                this.productTypeRegex = productTypeRegex.toString();
+            }
+
+            return this;
+        }
 
         public ServerConfig build() {
             return new ServerConfig(this);
