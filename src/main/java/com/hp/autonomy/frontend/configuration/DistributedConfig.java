@@ -61,10 +61,10 @@ public class DistributedConfig implements ConfigurationComponent {
     private final ServerConfig dah;
 
     private DistributedConfig(final Builder builder) {
-        this.distributed = builder.distributed;
-        this.standard = builder.standard;
-        this.dih = builder.dih;
-        this.dah = builder.dah;
+        distributed = builder.distributed;
+        standard = builder.standard;
+        dih = builder.dih;
+        dah = builder.dah;
     }
 
     /**
@@ -76,10 +76,10 @@ public class DistributedConfig implements ConfigurationComponent {
         if (distributedConfig != null) {
             final Builder builder = new Builder();
 
-            builder.setDistributed(this.distributed == null ? distributedConfig.distributed : this.distributed);
-            builder.setStandard(this.standard == null ? distributedConfig.standard : this.standard.merge(distributedConfig.standard));
-            builder.setDih(this.dih == null ? distributedConfig.dih : this.dih.merge(distributedConfig.dih));
-            builder.setDah(this.dah == null ? distributedConfig.dah : this.dah.merge(distributedConfig.dah));
+            builder.setDistributed(distributed == null ? distributedConfig.distributed : distributed);
+            builder.setStandard(standard == null ? distributedConfig.standard : standard.merge(distributedConfig.standard));
+            builder.setDih(dih == null ? distributedConfig.dih : dih.merge(distributedConfig.dih));
+            builder.setDah(dah == null ? distributedConfig.dah : dah.merge(distributedConfig.dah));
 
             return builder.build();
         }
@@ -97,10 +97,10 @@ public class DistributedConfig implements ConfigurationComponent {
         final Builder builder = new Builder(this);
 
         if (distributed) {
-            builder.setDih(this.dih.fetchServerDetails(aciService, indexingService));
-            builder.setDah(this.dah.fetchServerDetails(aciService, indexingService));
+            builder.setDih(dih.fetchServerDetails(aciService, indexingService));
+            builder.setDah(dah.fetchServerDetails(aciService, indexingService));
         } else {
-            builder.setStandard(this.standard.fetchServerDetails(aciService, indexingService));
+            builder.setStandard(standard.fetchServerDetails(aciService, indexingService));
         }
 
         return builder.build();
@@ -116,6 +116,14 @@ public class DistributedConfig implements ConfigurationComponent {
         } else {
             return standard.toAciServerDetails();
         }
+    }
+
+    /**
+     * @return The {@link AciServerDetails} for the ACI part of the config. If distributed is true these will be the DIH
+     * settings, otherwise they will be the standard settings.
+     */
+    public AciServerDetails toIndexingAciServerDetails() {
+        return distributed ? dih.toAciServerDetails() : standard.toAciServerDetails();
     }
 
     /**
@@ -220,10 +228,10 @@ public class DistributedConfig implements ConfigurationComponent {
         private ServerConfig dah;
 
         public Builder(final DistributedConfig distributedConfig) {
-            this.distributed = distributedConfig.distributed;
-            this.standard = distributedConfig.standard;
-            this.dih = distributedConfig.dih;
-            this.dah = distributedConfig.dah;
+            distributed = distributedConfig.distributed;
+            standard = distributedConfig.standard;
+            dih = distributedConfig.dih;
+            dah = distributedConfig.dah;
         }
 
         public DistributedConfig build() {
