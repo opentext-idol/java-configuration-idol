@@ -12,6 +12,11 @@ package com.hp.autonomy.frontend.configuration;
 public enum ProductType {
 
     /**
+     * Represents Answer Server
+     */
+    ANSWERSERVER("Answer Server"),
+
+    /**
      * Represents Content/Suir/AXE/DRE
      */
     AXE("Content"),
