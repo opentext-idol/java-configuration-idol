@@ -16,6 +16,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.hp.autonomy.frontend.configuration.validation.OptionalConfigurationComponent;
+import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -36,7 +38,7 @@ import org.slf4j.LoggerFactory;
 @Data
 @JsonDeserialize(builder = DistributedConfig.Builder.class)
 @JsonTypeName("DistributedConfig")
-public class DistributedConfig implements ConfigurationComponent {
+public class DistributedConfig implements OptionalConfigurationComponent<DistributedConfig> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerConfig.class);
 
@@ -196,15 +198,16 @@ public class DistributedConfig implements ConfigurationComponent {
     /**
      *
      * @param component The name of the configuration section, to be used in case of failure
-     * @return true if all the required settings exist
      * @throws ConfigException If the ServerConfig is invalid
      * @see ServerConfig#basicValidate(String)
      */
-    public boolean basicValidate(final String component) throws ConfigException {
+    @Override
+    public void basicValidate(final String component) throws ConfigException {
         if (distributed) {
-            return dih.basicValidate(component) && dah.basicValidate(component);
+            dih.basicValidate(component);
+            dah.basicValidate(component);
         } else {
-            return standard.basicValidate(component);
+            standard.basicValidate(component);
         }
     }
 

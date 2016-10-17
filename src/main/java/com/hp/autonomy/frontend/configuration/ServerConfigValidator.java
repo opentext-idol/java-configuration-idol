@@ -8,6 +8,8 @@ package com.hp.autonomy.frontend.configuration;
 import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.nonaci.indexing.IndexingService;
+import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
+import com.hp.autonomy.frontend.configuration.validation.Validator;
 
 /**
  * A {@link Validator} for {@link ServerConfig}

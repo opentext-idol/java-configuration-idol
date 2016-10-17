@@ -11,6 +11,7 @@ import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.services.StAXProcessor;
 import com.autonomy.aci.client.transport.AciServerDetails;
 import com.autonomy.nonaci.indexing.IndexingService;
+import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
 import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.Matchers;
 import org.junit.Before;

@@ -5,6 +5,7 @@
 
 package com.hp.autonomy.frontend.configuration;
 
+import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 

@@ -16,6 +16,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.hp.autonomy.frontend.configuration.validation.OptionalConfigurationComponent;
+import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang.StringUtils;
@@ -30,7 +32,7 @@ import java.util.regex.Pattern;
  */
 @Data
 @JsonDeserialize(builder = ServerConfig.Builder.class)
-public class ServerConfig implements ConfigurationComponent {
+public class ServerConfig implements OptionalConfigurationComponent<ServerConfig> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerConfig.class);
 
@@ -60,20 +62,20 @@ public class ServerConfig implements ConfigurationComponent {
     private final Pattern productTypeRegex;
 
     private ServerConfig(final Builder builder) {
-        this.protocol = builder.getProtocol();
-        this.host = builder.getHost();
-        this.port = builder.getPort();
-        this.indexPort = builder.getIndexPort();
-        this.indexProtocol = builder.getIndexProtocol();
-        this.servicePort = builder.getServicePort();
-        this.serviceProtocol = builder.getServiceProtocol();
-        this.productType = builder.getProductType();
-        this.indexErrorMessage = builder.getIndexErrorMessage();
+        protocol = builder.getProtocol();
+        host = builder.getHost();
+        port = builder.getPort();
+        indexPort = builder.getIndexPort();
+        indexProtocol = builder.getIndexProtocol();
+        servicePort = builder.getServicePort();
+        serviceProtocol = builder.getServiceProtocol();
+        productType = builder.getProductType();
+        indexErrorMessage = builder.getIndexErrorMessage();
 
         if(builder.productTypeRegex == null) {
-            this.productTypeRegex = null;
+            productTypeRegex = null;
         } else {
-            this.productTypeRegex = Pattern.compile(builder.productTypeRegex);
+            productTypeRegex = Pattern.compile(builder.productTypeRegex);
         }
     }
 
@@ -87,18 +89,18 @@ public class ServerConfig implements ConfigurationComponent {
         if(serverConfig != null) {
             final Builder builder = new Builder();
 
-            builder.setProtocol(this.protocol == null ? serverConfig.protocol : this.protocol);
-            builder.setHost(this.host == null ? serverConfig.host : this.host);
-            builder.setPort(this.port == 0 ? serverConfig.port : this.port);
-            builder.setIndexPort(this.indexPort == 0 ? serverConfig.indexPort : this.indexPort);
-            builder.setIndexProtocol(this.indexProtocol == null ? serverConfig.indexProtocol : this.indexProtocol);
-            builder.setServicePort(this.servicePort == 0 ? serverConfig.servicePort : this.servicePort);
-            builder.setServiceProtocol(this.serviceProtocol == null ? serverConfig.serviceProtocol : this.serviceProtocol);
-            builder.setProductType(this.productType == null ? serverConfig.productType : this.productType);
-            builder.setIndexErrorMessage(this.indexErrorMessage == null ? serverConfig.indexErrorMessage : this.indexErrorMessage);
+            builder.setProtocol(protocol == null ? serverConfig.protocol : protocol);
+            builder.setHost(host == null ? serverConfig.host : host);
+            builder.setPort(port == 0 ? serverConfig.port : port);
+            builder.setIndexPort(indexPort == 0 ? serverConfig.indexPort : indexPort);
+            builder.setIndexProtocol(indexProtocol == null ? serverConfig.indexProtocol : indexProtocol);
+            builder.setServicePort(servicePort == 0 ? serverConfig.servicePort : servicePort);
+            builder.setServiceProtocol(serviceProtocol == null ? serverConfig.serviceProtocol : serviceProtocol);
+            builder.setProductType(productType == null ? serverConfig.productType : productType);
+            builder.setIndexErrorMessage(indexErrorMessage == null ? serverConfig.indexErrorMessage : indexErrorMessage);
 
             // we use Pattern here, but Builder takes String
-            builder.setProductTypeRegex(Objects.toString(this.productTypeRegex == null ? serverConfig.productTypeRegex : this.productTypeRegex, null));
+            builder.setProductTypeRegex(Objects.toString(productTypeRegex == null ? serverConfig.productTypeRegex : productTypeRegex, null));
 
             return builder.build();
         }
@@ -115,13 +117,13 @@ public class ServerConfig implements ConfigurationComponent {
     public ServerConfig withIndexServer(final ServerDetails serverDetails) {
         final Builder builder = new Builder();
 
-        builder.setProtocol(this.protocol);
-        builder.setHost(this.host);
-        builder.setPort(this.port);
+        builder.setProtocol(protocol);
+        builder.setHost(host);
+        builder.setPort(port);
         builder.setIndexProtocol(serverDetails.getProtocol());
         builder.setIndexPort(serverDetails.getPort());
-        builder.setServiceProtocol(this.serviceProtocol);
-        builder.setServicePort(this.servicePort);
+        builder.setServiceProtocol(serviceProtocol);
+        builder.setServicePort(servicePort);
 
         return builder.build();
     }
@@ -136,34 +138,34 @@ public class ServerConfig implements ConfigurationComponent {
     public ServerConfig fetchServerDetails(final AciService aciService, final IndexingService indexingService) {
         final Builder builder = new Builder();
 
-        builder.setProtocol(this.protocol);
-        builder.setHost(this.host);
-        builder.setPort(this.port);
+        builder.setProtocol(protocol);
+        builder.setHost(host);
+        builder.setPort(port);
 
         final PortsResponse response;
 
         try {
             // getStatus doesn't always return ports, but does when an index port is used
-            if(this.indexErrorMessage == null) {
-                response = aciService.executeAction(this.toAciServerDetails(), new AciParameters("getChildren"), new PortsResponseProcessor("autn:port", "autn:serviceport"));
+            if(indexErrorMessage == null) {
+                response = aciService.executeAction(toAciServerDetails(), new AciParameters("getChildren"), new PortsResponseProcessor("autn:port", "autn:serviceport"));
             } else {
-                response = aciService.executeAction(this.toAciServerDetails(), new AciParameters("getStatus"), new PortsResponseProcessor("aciport", "serviceport", "indexport"));
+                response = aciService.executeAction(toAciServerDetails(), new AciParameters("getStatus"), new PortsResponseProcessor("aciport", "serviceport", "indexport"));
             }
         } catch(final RuntimeException e) {
             throw new IllegalArgumentException("Unable to connect to ACI server");
         }
 
-        if(this.indexErrorMessage != null) {
+        if(indexErrorMessage != null) {
             final int indexPort = response.getIndexPort();
             final ServerDetails indexDetails = new ServerDetails();
-            indexDetails.setHost(this.getHost());
+            indexDetails.setHost(getHost());
             indexDetails.setPort(indexPort);
             boolean isIndexPortValid = false;
 
             for(final ServerDetails.TransportProtocol protocol : Arrays.asList(ServerDetails.TransportProtocol.HTTP, ServerDetails.TransportProtocol.HTTPS)) {
                 indexDetails.setProtocol(protocol);
 
-                if(testIndexingConnection(indexDetails, indexingService, this.indexErrorMessage)) {
+                if(testIndexingConnection(indexDetails, indexingService, indexErrorMessage)) {
                     // test http first. If the server is https, it will give an error (quickly),
                     // whereas the timeout when doing https to a http server takes a really long time
                     builder.setIndexProtocol(protocol);
@@ -181,7 +183,7 @@ public class ServerConfig implements ConfigurationComponent {
 
         final int servicePort = response.getServicePort();
         final AciServerDetails servicePortDetails = new AciServerDetails();
-        servicePortDetails.setHost(this.getHost());
+        servicePortDetails.setHost(getHost());
         servicePortDetails.setPort(servicePort);
 
         for(final AciServerDetails.TransportProtocol protocol : Arrays.asList(AciServerDetails.TransportProtocol.HTTP, AciServerDetails.TransportProtocol.HTTPS)) {
@@ -273,7 +275,7 @@ public class ServerConfig implements ConfigurationComponent {
         try {
             isCorrectVersion = testServerVersion(aciService, processorFactory);
         } catch(final RuntimeException e) {
-            LOGGER.debug("Error validating server version for {}", this.productType);
+            LOGGER.debug("Error validating server version for {}", productType);
             LOGGER.debug("", e);
             return new ValidationResult<>(false, Validation.CONNECTION_ERROR);
         }
@@ -298,7 +300,7 @@ public class ServerConfig implements ConfigurationComponent {
 
             final boolean result = serverConfig.getServicePort() > 0;
 
-            if(this.indexErrorMessage == null) {
+            if(indexErrorMessage == null) {
                 return new ValidationResult<>(result, Validation.SERVICE_PORT_ERROR);
             } else {
                 return new ValidationResult<>(result && serverConfig.getIndexPort() > 0,
@@ -316,15 +318,14 @@ public class ServerConfig implements ConfigurationComponent {
      * @return true if all the required settings exist
      * @throws ConfigException If the ServerConfig is invalid
      */
-    public boolean basicValidate(final String component) throws ConfigException {
-        if(this.getPort() <= 0 || this.getPort() > 65535) {
+    @Override
+    public void basicValidate(final String component) throws ConfigException {
+        if(getPort() <= 0 || getPort() > 65535) {
             throw new ConfigException(component,
                                       component + ": port number must be between 1 and 65535.");
-        } else if(StringUtils.isBlank(this.getHost())) {
+        } else if(StringUtils.isBlank(getHost())) {
             throw new ConfigException(component,
                                       component + ": host name must not be blank.");
-        } else {
-            return true;
         }
     }
 

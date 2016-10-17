@@ -9,6 +9,11 @@ import com.autonomy.aci.client.transport.AciServerDetails;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hp.autonomy.frontend.configuration.authentication.Authentication;
+import com.hp.autonomy.frontend.configuration.authentication.CasAuthentication;
+import com.hp.autonomy.frontend.configuration.authentication.DefaultLogin;
+import com.hp.autonomy.frontend.configuration.authentication.SingleUserAuthentication;
+import com.hp.autonomy.frontend.configuration.authentication.UsernameAndPassword;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,7 +38,7 @@ public class CommunityAuthenticationTest {
 
     @Test
     public void jsonSerialization() {
-        final DefaultLogin defaultLogin = DefaultLogin.generateDefaultLogin();
+        final UsernameAndPassword defaultLogin = DefaultLogin.generateDefaultLogin();
 
         final ServerConfig community = new ServerConfig.Builder()
             .setProtocol(AciServerDetails.TransportProtocol.HTTP)
@@ -41,10 +46,10 @@ public class CommunityAuthenticationTest {
             .setPort(9030)
             .build();
 
-        final CommunityAuthentication communityAuthentication = new CommunityAuthentication.Builder()
-            .setCommunity(community)
-            .setDefaultLogin(defaultLogin)
-            .setMethod("autonomy")
+        final CommunityAuthentication communityAuthentication = CommunityAuthentication.builder()
+            .community(community)
+            .defaultLogin(defaultLogin)
+            .method("autonomy")
             .build();
 
         final JsonNode jsonNode = objectMapper.valueToTree(communityAuthentication);
