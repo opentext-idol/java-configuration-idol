@@ -5,11 +5,13 @@
 
 package com.hp.autonomy.frontend.configuration.aci;
 
-import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.transport.AciServerDetails;
 import com.autonomy.aci.client.util.AciParameters;
-import com.hp.autonomy.frontend.configuration.server.SecurityType;
+import com.hp.autonomy.types.idol.marshalling.ProcessorFactory;
+import com.hp.autonomy.types.idol.responses.CommunityStatusResponseData;
+import com.hp.autonomy.types.idol.responses.SecurityType;
+import com.hp.autonomy.types.requests.idol.actions.status.StatusActions;
 
 import java.util.List;
 
@@ -20,14 +22,15 @@ public class CommunityServiceImpl implements CommunityService {
 
     private AciService aciService;
 
-    private IdolAnnotationsProcessorFactory processorFactory;
+    private ProcessorFactory processorFactory;
 
     @Override
     public List<SecurityType> getSecurityTypes(final AciServerDetails community) {
         try {
-            return aciService.executeAction(community, new AciParameters("getstatus"),
-                processorFactory.listProcessorForClass(SecurityType.class));
-        } catch (final RuntimeException e) {
+            final CommunityStatusResponseData responseData = aciService.executeAction(community, new AciParameters(StatusActions.GetStatus.name()),
+                    processorFactory.getResponseDataProcessor(CommunityStatusResponseData.class));
+            return responseData.getSecurityTypes().getSecurityType();
+        } catch (final RuntimeException ignored) {
             return null;
         }
     }
@@ -40,9 +43,9 @@ public class CommunityServiceImpl implements CommunityService {
     }
 
     /**
-     * @param processorFactory The {@link IdolAnnotationsProcessorFactory} to use for reading Community responses
+     * @param processorFactory The {@link ProcessorFactory} to use for reading Community responses
      */
-    public void setProcessorFactory(final IdolAnnotationsProcessorFactory processorFactory) {
+    public void setProcessorFactory(final ProcessorFactory processorFactory) {
         this.processorFactory = processorFactory;
     }
 }

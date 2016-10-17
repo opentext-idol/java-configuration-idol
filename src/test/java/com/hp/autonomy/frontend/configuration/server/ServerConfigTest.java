@@ -5,126 +5,129 @@
 
 package com.hp.autonomy.frontend.configuration.server;
 
-import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
-import com.autonomy.aci.client.services.StAXProcessor;
+import com.autonomy.aci.client.services.Processor;
 import com.autonomy.aci.client.transport.AciParameter;
 import com.autonomy.nonaci.ServerDetails;
 import com.autonomy.nonaci.indexing.IndexCommand;
 import com.autonomy.nonaci.indexing.IndexingException;
 import com.autonomy.nonaci.indexing.IndexingService;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
+import com.hp.autonomy.types.idol.marshalling.ProcessorFactory;
+import com.hp.autonomy.types.idol.responses.GetChildrenResponseData;
+import com.hp.autonomy.types.idol.responses.GetStatusResponseData;
+import com.hp.autonomy.types.idol.responses.GetVersionResponseData;
 import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Factory;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.EnumSet;
 
 import static com.hp.autonomy.frontend.configuration.server.IsValidMatcher.valid;
 import static com.hp.autonomy.frontend.configuration.server.ServerConfigTest.IsAciParameter.aciParameter;
-import static org.hamcrest.Matchers.any;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Slf4j
+@RunWith(MockitoJUnitRunner.class)
 public class ServerConfigTest {
-
+    @Mock
+    private Processor<Void> voidProcessor;
+    @Mock
+    private Processor<GetVersionResponseData> getVersionProcessor;
+    @Mock
     private AciService aciService;
+    @Mock
     private IndexingService indexingService;
-    private IdolAnnotationsProcessorFactory processorFactory;
+    @Mock
+    private ProcessorFactory processorFactory;
 
     @Before
     public void setUp() {
-        aciService = mock(AciService.class);
-        indexingService = mock(IndexingService.class);
-        processorFactory = mock(IdolAnnotationsProcessorFactory.class);
-
-        when(processorFactory.listProcessorForClass(GetVersionResponse.class)).thenReturn(mock(StAXProcessor.class));
-        when(processorFactory.listProcessorForClass(EmptyResponse.class)).thenReturn(mock(StAXProcessor.class));
+        when(processorFactory.getVoidProcessor()).thenReturn(voidProcessor);
+        when(processorFactory.getResponseDataProcessor(GetVersionResponseData.class)).thenReturn(getVersionProcessor);
     }
 
     @Test
     public void testValidate() {
         final ProductType productType = ProductType.SERVICECOORDINATOR;
 
-        final GetVersionResponse getVersionResponse = new GetVersionResponse.Builder()
-            .setProductTypes(productType.name())
-            .build();
+        final GetVersionResponseData getVersionResponseData = mockGetVersionResponse(productType.name());
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 6666)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
-            argThat(any(StAXProcessor.class))
-        )).thenReturn(Collections.singletonList(getVersionResponse));
+                argThat(new IsAciServerDetails("example.com", 6666)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                any()
+        )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 6666)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
-            argThat(any(PortsResponseProcessor.class))
-        )).thenReturn(new PortsResponse(6666, 0, 6668));
+                argThat(new IsAciServerDetails("example.com", 6666)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
+                any()
+        )).thenReturn(mockGetChildrenResponse(6666, 6668));
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 6668)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
-            argThat(any(NoopProcessor.class))
+                argThat(new IsAciServerDetails("example.com", 6668)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                any()
         )).thenReturn(true);
 
         final ServerConfig serverConfig = new ServerConfig.Builder()
-            .setHost("example.com")
-            .setPort(6666)
-            .setProductType(Collections.singleton(productType))
-            .build();
+                .setHost("example.com")
+                .setPort(6666)
+                .setProductType(Collections.singleton(productType))
+                .build();
 
         assertThat(serverConfig.validate(aciService, null, processorFactory), is(valid()));
     }
 
     @Test
     public void testValidateWithIndexPort() {
-        final String indexErrorMessage = "Bad command or file name";
         final ProductType productType = ProductType.AXE;
 
-        final GetVersionResponse getVersionResponse = new GetVersionResponse.Builder()
-            .setProductTypes(productType.name())
-            .build();
+        final GetVersionResponseData getVersionResponseData = mockGetVersionResponse(productType.name());
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7666)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
-            argThat(any(StAXProcessor.class))
-        )).thenReturn(Collections.singletonList(getVersionResponse));
+                argThat(new IsAciServerDetails("example.com", 7666)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                any()
+        )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7666)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
-            argThat(any(PortsResponseProcessor.class))
-        )).thenReturn(new PortsResponse(7666, 7667, 7668));
+                argThat(new IsAciServerDetails("example.com", 7666)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                any()
+        )).thenReturn(mockGetStatusResponse(7666, 7667, 7668));
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7668)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
-            argThat(any(NoopProcessor.class))
+                argThat(new IsAciServerDetails("example.com", 7668)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                any()
         )).thenReturn(true);
 
+        final String indexErrorMessage = "Bad command or file name";
         when(indexingService.executeCommand(
-            argThat(new IsServerDetails("example.com", 7667)),
-            argThat(any(IndexCommand.class))
+                argThat(new IsServerDetails("example.com", 7667)),
+                any(IndexCommand.class)
         )).thenThrow(new IndexingException(indexErrorMessage));
 
         final ServerConfig serverConfig = new ServerConfig.Builder()
-            .setHost("example.com")
-            .setPort(7666)
-            .setProductType(Collections.singleton(productType))
-            .setIndexErrorMessage(indexErrorMessage)
-            .build();
+                .setHost("example.com")
+                .setPort(7666)
+                .setProductType(Collections.singleton(productType))
+                .setIndexErrorMessage(indexErrorMessage)
+                .build();
 
         assertThat(serverConfig.validate(aciService, indexingService, processorFactory), is(valid()));
     }
@@ -133,39 +136,37 @@ public class ServerConfigTest {
     public void testValidateWithIncorrectIndexErrorMessage() {
         final ProductType productType = ProductType.AXE;
 
-        final GetVersionResponse getVersionResponse = new GetVersionResponse.Builder()
-            .setProductTypes(productType.name())
-            .build();
+        final GetVersionResponseData getVersionResponseData = mockGetVersionResponse(productType.name());
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7666)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
-            argThat(any(StAXProcessor.class))
-        )).thenReturn(Collections.singletonList(getVersionResponse));
+                argThat(new IsAciServerDetails("example.com", 7666)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                any()
+        )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7666)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
-            argThat(any(PortsResponseProcessor.class))
-        )).thenReturn(new PortsResponse(7666, 7667, 7668));
+                argThat(new IsAciServerDetails("example.com", 7666)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                any()
+        )).thenReturn(mockGetStatusResponse(7666, 7667, 7668));
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7668)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
-            argThat(any(NoopProcessor.class))
+                argThat(new IsAciServerDetails("example.com", 7668)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                any()
         )).thenReturn(true);
 
         when(indexingService.executeCommand(
-            argThat(new IsServerDetails("example.com", 7667)),
-            argThat(any(IndexCommand.class))
+                argThat(new IsServerDetails("example.com", 7667)),
+                any(IndexCommand.class)
         )).thenThrow(new IndexingException("ERRORPARAMBAD"));
 
         final ServerConfig serverConfig = new ServerConfig.Builder()
-            .setHost("example.com")
-            .setPort(7666)
-            .setProductType(Collections.singleton(productType))
-            .setIndexErrorMessage("Bad command or file name")
-            .build();
+                .setHost("example.com")
+                .setPort(7666)
+                .setProductType(Collections.singleton(productType))
+                .setIndexErrorMessage("Bad command or file name")
+                .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
         assertThat(validationResult.getData(), is((Object) ServerConfig.Validation.FETCH_PORT_ERROR));
@@ -174,23 +175,22 @@ public class ServerConfigTest {
 
     @Test
     public void testValidateWithWrongVersion() {
-        final GetVersionResponse getVersionResponse = new GetVersionResponse.Builder()
-            .setProductTypes(ProductType.UASERVER.name())
-            .build();
+        final ProductType productType = ProductType.UASERVER;
+        final GetVersionResponseData getVersionResponseData = mockGetVersionResponse(productType.name());
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 6666)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
-            argThat(any(StAXProcessor.class))
-        )).thenReturn(Collections.singletonList(getVersionResponse));
+                argThat(new IsAciServerDetails("example.com", 6666)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                any()
+        )).thenReturn(getVersionResponseData);
 
         // no further stubbing required because we won't get that far
 
         final ServerConfig serverConfig = new ServerConfig.Builder()
-            .setHost("example.com")
-            .setPort(6666)
-            .setProductType(Collections.singleton(ProductType.AXE))
-            .build();
+                .setHost("example.com")
+                .setPort(6666)
+                .setProductType(Collections.singleton(ProductType.AXE))
+                .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
         assertThat(validationResult.getData(), is((Object) new ServerConfig.IncorrectServerType(Collections.singletonList("Content"))));
@@ -201,61 +201,57 @@ public class ServerConfigTest {
     public void testValidateWithNoServicePort() {
         final ProductType productType = ProductType.SERVICECOORDINATOR;
 
-        final GetVersionResponse getVersionResponse = new GetVersionResponse.Builder()
-            .setProductTypes(productType.name())
-            .build();
+        final GetVersionResponseData getVersionResponseData = mockGetVersionResponse(productType.name());
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 6666)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
-            argThat(any(StAXProcessor.class))
-        )).thenReturn(Collections.singletonList(getVersionResponse));
+                argThat(new IsAciServerDetails("example.com", 6666)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                any()
+        )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 6666)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
-            argThat(any(PortsResponseProcessor.class))
-        )).thenReturn(new PortsResponse(6666, 0, 0));
+                argThat(new IsAciServerDetails("example.com", 6666)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
+                any()
+        )).thenReturn(mockGetChildrenResponse(6666, null));
 
 
         final ServerConfig serverConfig = new ServerConfig.Builder()
-            .setHost("example.com")
-            .setPort(6666)
-            .setProductType(Collections.singleton(productType))
-            .build();
+                .setHost("example.com")
+                .setPort(6666)
+                .setProductType(Collections.singleton(productType))
+                .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
-        assertThat(validationResult.getData(), is((Object) ServerConfig.Validation.FETCH_PORT_ERROR));
+        assertThat(validationResult.getData(), is((Object) ServerConfig.Validation.SERVICE_PORT_ERROR));
         assertThat(serverConfig.validate(aciService, null, processorFactory), is(not(valid())));
     }
 
     @Test
     public void testValidateWithMissingIndexPort() {
-        final String indexErrorMessage = "Bad command or file name";
         final ProductType productType = ProductType.AXE;
 
-        final GetVersionResponse getVersionResponse = new GetVersionResponse.Builder()
-            .setProductTypes(productType.name())
-            .build();
+        final GetVersionResponseData getVersionResponseData = mockGetVersionResponse(productType.name());
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7666)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
-            argThat(any(StAXProcessor.class))
-        )).thenReturn(Collections.singletonList(getVersionResponse));
+                argThat(new IsAciServerDetails("example.com", 7666)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                any()
+        )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7666)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
-            argThat(any(PortsResponseProcessor.class))
-        )).thenReturn(new PortsResponse(7666, 0, 7668));
+                argThat(new IsAciServerDetails("example.com", 7666)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                any()
+        )).thenReturn(mockGetChildrenResponse(7666, 7668));
 
+        final String indexErrorMessage = "Bad command or file name";
         final ServerConfig serverConfig = new ServerConfig.Builder()
-            .setHost("example.com")
-            .setPort(7666)
-            .setProductType(Collections.singleton(productType))
-            .setIndexErrorMessage(indexErrorMessage)
-            .build();
+                .setHost("example.com")
+                .setPort(7666)
+                .setProductType(Collections.singleton(productType))
+                .setIndexErrorMessage(indexErrorMessage)
+                .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
         assertThat(validationResult.getData(), is((Object) ServerConfig.Validation.FETCH_PORT_ERROR));
@@ -265,10 +261,10 @@ public class ServerConfigTest {
     @Test
     public void testValidateWithInvalidHost() {
         final ServerConfig serverConfig = new ServerConfig.Builder()
-            .setHost("")
-            .setPort(6666)
-            .setProductType(Collections.singleton(ProductType.SERVICECOORDINATOR))
-            .build();
+                .setHost("")
+                .setPort(6666)
+                .setProductType(Collections.singleton(ProductType.SERVICECOORDINATOR))
+                .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
         assertThat(validationResult.getData(), is((Object) ServerConfig.Validation.REQUIRED_FIELD_MISSING));
@@ -278,10 +274,10 @@ public class ServerConfigTest {
     @Test
     public void testValidateWithInvalidPort() {
         final ServerConfig serverConfig = new ServerConfig.Builder()
-            .setHost("example.com")
-            .setPort(0)
-            .setProductType(Collections.singleton(ProductType.SERVICECOORDINATOR))
-            .build();
+                .setHost("example.com")
+                .setPort(0)
+                .setProductType(Collections.singleton(ProductType.SERVICECOORDINATOR))
+                .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
         assertThat(validationResult.getData(), is((Object) ServerConfig.Validation.REQUIRED_FIELD_MISSING));
@@ -290,104 +286,122 @@ public class ServerConfigTest {
 
     @Test
     public void testValidateWithMultipleAllowedServers() {
-        final GetVersionResponse getVersionResponse = new GetVersionResponse.Builder()
-            .setProductTypes(ProductType.AXE.name())
-            .build();
+        final ProductType productType = ProductType.AXE;
+        final GetVersionResponseData getVersionResponseData = mockGetVersionResponse(productType.name());
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7666)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
-            argThat(any(StAXProcessor.class))
-        )).thenReturn(Collections.singletonList(getVersionResponse));
+                argThat(new IsAciServerDetails("example.com", 7666)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                any()
+        )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7666)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
-            argThat(any(PortsResponseProcessor.class))
-        )).thenReturn(new PortsResponse(7666, 7667, 7668));
+                argThat(new IsAciServerDetails("example.com", 7666)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
+                any()
+        )).thenReturn(mockGetChildrenResponse(7666, 7668));
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7668)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
-            argThat(any(NoopProcessor.class))
+                argThat(new IsAciServerDetails("example.com", 7668)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                any()
         )).thenReturn(true);
 
         final ServerConfig serverConfig = new ServerConfig.Builder()
-            .setHost("example.com")
-            .setPort(7666)
-            .setProductType(new HashSet<>(Arrays.asList(ProductType.AXE, ProductType.DAH, ProductType.IDOLPROXY)))
-            .build();
+                .setHost("example.com")
+                .setPort(7666)
+                .setProductType(EnumSet.of(ProductType.AXE, ProductType.DAH, ProductType.IDOLPROXY))
+                .build();
 
         assertThat(serverConfig.validate(aciService, null, processorFactory), is(valid()));
     }
 
     @Test
     public void testValidateWithProductTypeRegex() {
-        final GetVersionResponse getVersionResponse = new GetVersionResponse.Builder()
-            .setProductTypes("FILESYSTEMCONNECTOR")
-            .build();
+        final GetVersionResponseData getVersionResponseData = mockGetVersionResponse("FILESYSTEMCONNECTOR");
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7008)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
-            argThat(any(StAXProcessor.class))
-        )).thenReturn(Collections.singletonList(getVersionResponse));
+                argThat(new IsAciServerDetails("example.com", 7008)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                any()
+        )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7008)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
-            argThat(any(PortsResponseProcessor.class))
-        )).thenReturn(new PortsResponse(7008, 0, 7010));
+                argThat(new IsAciServerDetails("example.com", 7008)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
+                any()
+        )).thenReturn(mockGetChildrenResponse(7008, 7010));
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7010)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
-            argThat(any(NoopProcessor.class))
+                argThat(new IsAciServerDetails("example.com", 7010)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                any()
         )).thenReturn(true);
 
         final ServerConfig serverConfig = new ServerConfig.Builder()
-            .setHost("example.com")
-            .setPort(7008)
-            .setProductTypeRegex(".*?CONNECTOR")
-            .build();
+                .setHost("example.com")
+                .setPort(7008)
+                .setProductTypeRegex(".*?CONNECTOR")
+                .build();
 
         assertThat(serverConfig.validate(aciService, null, processorFactory), is(valid()));
     }
 
     @Test
     public void testValidateWithInvalidProductTypeRegex() {
-        final GetVersionResponse getVersionResponse = new GetVersionResponse.Builder()
-            .setProductTypes("FILESYSTEMCONNECTOR")
-            .build();
+        final GetVersionResponseData getVersionResponseData = mockGetVersionResponse("FILESYSTEMCONNECTOR");
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7008)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
-            argThat(any(StAXProcessor.class))
-        )).thenReturn(Collections.singletonList(getVersionResponse));
+                argThat(new IsAciServerDetails("example.com", 7008)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                any()
+        )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7008)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
-            argThat(any(PortsResponseProcessor.class))
-        )).thenReturn(new PortsResponse(7008, 0, 7010));
+                argThat(new IsAciServerDetails("example.com", 7008)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
+                any()
+        )).thenReturn(mockGetChildrenResponse(7008, 7010));
 
         when(aciService.executeAction(
-            argThat(new IsAciServerDetails("example.com", 7010)),
-            argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
-            argThat(any(NoopProcessor.class))
+                argThat(new IsAciServerDetails("example.com", 7010)),
+                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                any()
         )).thenReturn(true);
 
         final ServerConfig serverConfig = new ServerConfig.Builder()
-            .setHost("example.com")
-            .setPort(7008)
-            .setProductTypeRegex(".*?SERVER")
-            .build();
+                .setHost("example.com")
+                .setPort(7008)
+                .setProductTypeRegex(".*?SERVER")
+                .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, null, processorFactory);
 
         assertThat(validationResult, is(not(valid())));
-        assertThat(validationResult.getData(), CoreMatchers.<Object>is(ServerConfig.Validation.REGULAR_EXPRESSION_MATCH_ERROR));
+        assertThat(validationResult.getData(), CoreMatchers.is(ServerConfig.Validation.REGULAR_EXPRESSION_MATCH_ERROR));
+    }
+
+    private GetVersionResponseData mockGetVersionResponse(final String productType) {
+        final GetVersionResponseData getVersionResponseData = new GetVersionResponseData();
+        getVersionResponseData.setProducttypecsv(productType);
+        return getVersionResponseData;
+    }
+
+    private GetChildrenResponseData mockGetChildrenResponse(final int port, final Integer servicePort) {
+        final GetChildrenResponseData getChildrenResponseData = new GetChildrenResponseData();
+        getChildrenResponseData.setPort(port);
+        if (servicePort != null) {
+            getChildrenResponseData.setServiceport(servicePort);
+        }
+        return getChildrenResponseData;
+    }
+
+    private GetStatusResponseData mockGetStatusResponse(final int port, final int indexPort, final int servicePort) {
+        final GetStatusResponseData getStatusResponseData = new GetStatusResponseData();
+        getStatusResponseData.setAciport(port);
+        getStatusResponseData.setIndexport(indexPort);
+        getStatusResponseData.setServiceport(servicePort);
+        return getStatusResponseData;
     }
 
     static class IsAciParameter extends ArgumentMatcher<AciParameter> {
@@ -414,7 +428,7 @@ public class ServerConfigTest {
             final AciParameter parameter = (AciParameter) argument;
 
             return name.equalsIgnoreCase(parameter.getName())
-                && value.equalsIgnoreCase(parameter.getValue());
+                    && value.equalsIgnoreCase(parameter.getValue());
         }
     }
 
@@ -423,18 +437,6 @@ public class ServerConfigTest {
 
         private final String host;
         private final int port;
-
-        private IsServerDetails() {
-            this(null, -1);
-        }
-
-        private IsServerDetails(final int port) {
-            this(null, port);
-        }
-
-        private IsServerDetails(final String host) {
-            this(host, -1);
-        }
 
         private IsServerDetails(final String host, final int port) {
             this.host = host;

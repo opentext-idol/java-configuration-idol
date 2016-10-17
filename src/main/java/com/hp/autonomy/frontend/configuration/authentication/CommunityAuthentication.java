@@ -5,7 +5,6 @@
 
 package com.hp.autonomy.frontend.configuration.authentication;
 
-import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.nonaci.indexing.IndexingService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -15,9 +14,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.hp.autonomy.frontend.configuration.ConfigException;
 import com.hp.autonomy.frontend.configuration.LoginTypes;
-import com.hp.autonomy.frontend.configuration.server.ServerConfig;
 import com.hp.autonomy.frontend.configuration.SimpleComponent;
+import com.hp.autonomy.frontend.configuration.server.ServerConfig;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
+import com.hp.autonomy.types.idol.marshalling.ProcessorFactory;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -90,11 +90,11 @@ public class CommunityAuthentication extends SimpleComponent<CommunityAuthentica
      * Checks that the community server details are valid
      *
      * @param aciService       The {@link AciService} to use for validation
-     * @param processorFactory The {@link IdolAnnotationsProcessorFactory} to use for validation
+     * @param processorFactory The {@link ProcessorFactory} to use for validation
      * @return A {@link ValidationResult} determining the validity of the server
-     * @see ServerConfig#validate(AciService, IndexingService, IdolAnnotationsProcessorFactory)
+     * @see ServerConfig#validate(AciService, IndexingService, ProcessorFactory)
      */
-    public ValidationResult<?> validate(final AciService aciService, final IdolAnnotationsProcessorFactory processorFactory) {
+    public ValidationResult<?> validate(final AciService aciService, final ProcessorFactory processorFactory) {
         return community.validate(aciService, null, processorFactory);
     }
 

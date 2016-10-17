@@ -5,46 +5,54 @@
 
 package com.hp.autonomy.frontend.configuration.server;
 
-import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciErrorException;
 import com.autonomy.aci.client.services.AciService;
-import com.autonomy.aci.client.services.StAXProcessor;
+import com.autonomy.aci.client.services.Processor;
 import com.autonomy.aci.client.transport.AciServerDetails;
 import com.autonomy.nonaci.indexing.IndexingService;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
+import com.hp.autonomy.types.idol.marshalling.ProcessorFactory;
+import com.hp.autonomy.types.idol.responses.GetVersionResponseData;
 import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.hp.autonomy.frontend.configuration.server.IsValidMatcher.valid;
 import static com.hp.autonomy.frontend.configuration.server.ServerConfigTest.IsAciParameter.aciParameter;
-import static org.hamcrest.Matchers.any;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("CastToConcreteClass")
 @Slf4j
+@RunWith(MockitoJUnitRunner.class)
 public class DistributedConfigTest {
-
+    @Mock
+    private Processor<Void> voidProcessor;
+    @Mock
+    private Processor<GetVersionResponseData> getVersionProcessor;
+    @Mock
     private AciService aciService;
+    @Mock
     private IndexingService indexingService;
-    private IdolAnnotationsProcessorFactory processorFactory;
+    @Mock
+    private ProcessorFactory processorFactory;
 
     @Before
     public void setUp() {
-        aciService = mock(AciService.class);
-        indexingService = mock(IndexingService.class);
-        processorFactory = mock(IdolAnnotationsProcessorFactory.class);
-
-        when(processorFactory.listProcessorForClass(EmptyResponse.class)).thenReturn(mock(StAXProcessor.class));
-        when(processorFactory.listProcessorForClass(GetVersionResponse.class)).thenReturn(mock(StAXProcessor.class));
+        when(processorFactory.getVoidProcessor()).thenReturn(voidProcessor);
+        when(processorFactory.getResponseDataProcessor(GetVersionResponseData.class)).thenReturn(getVersionProcessor);
     }
 
     @Test
@@ -63,7 +71,7 @@ public class DistributedConfigTest {
 
         verify(standard).validate(aciService, indexingService, processorFactory);
 
-        assertThat(validationResultA, Matchers.<ValidationResult<?>>equalTo(validationResultOne));
+        assertThat(validationResultA, Matchers.equalTo(validationResultOne));
     }
 
     @Test
@@ -119,8 +127,8 @@ public class DistributedConfigTest {
 
         final DistributedConfig.DistributedValidationResultDetails validationDetails = (DistributedConfig.DistributedValidationResultDetails) validationResultDistributed.getData();
 
-        assertThat(validationDetails.getDahValidationResult(), Matchers.<ValidationResult<?>>is(validationResultFail));
-        assertThat(validationDetails.getDihValidationResult(), Matchers.<ValidationResult<?>>is(validationResultFail));
+        assertThat(validationDetails.getDahValidationResult(), Matchers.is(validationResultFail));
+        assertThat(validationDetails.getDihValidationResult(), Matchers.is(validationResultFail));
     }
 
     @Test
@@ -148,7 +156,7 @@ public class DistributedConfigTest {
 
         final DistributedConfig.DistributedValidationResultDetails validationDetails = (DistributedConfig.DistributedValidationResultDetails) validationResultDistributed.getData();
 
-        assertThat(validationDetails.getDahValidationResult(), Matchers.<ValidationResult<?>>is(validationResultFail));
+        assertThat(validationDetails.getDahValidationResult(), Matchers.is(validationResultFail));
         assertThat(validationDetails.getDihValidationResult(), is(nullValue()));
     }
 
@@ -179,7 +187,7 @@ public class DistributedConfigTest {
         final DistributedConfig.DistributedValidationResultDetails validationDetails = (DistributedConfig.DistributedValidationResultDetails) validationResultDistributed.getData();
 
         assertThat(validationDetails.getDahValidationResult(), is(nullValue()));
-        assertThat(validationDetails.getDihValidationResult(), Matchers.<ValidationResult<?>>is(validationResultFail));
+        assertThat(validationDetails.getDihValidationResult(), Matchers.is(validationResultFail));
     }
 
     @Test
@@ -195,9 +203,9 @@ public class DistributedConfigTest {
         when(dah.toAciServerDetails()).thenReturn(mock(AciServerDetails.class));
 
         when(aciService.executeAction(
-            argThat(any(AciServerDetails.class)),
+            any(AciServerDetails.class),
             argThat(SetContainingItems.isSetWithItems(aciParameter("action", "LanguageSettings"))),
-            argThat(any(StAXProcessor.class))
+            any()
         )).thenThrow(new AciErrorException());
 
         final DistributedConfig distributedConfig = new DistributedConfig.Builder()

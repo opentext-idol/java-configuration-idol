@@ -5,11 +5,11 @@
 
 package com.hp.autonomy.frontend.configuration.server;
 
-import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.nonaci.indexing.IndexingService;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
 import com.hp.autonomy.frontend.configuration.validation.Validator;
+import com.hp.autonomy.types.idol.marshalling.ProcessorFactory;
 
 /**
  * {@link Validator} for DistributedConfig
@@ -18,7 +18,7 @@ public class DistributedConfigValidator implements Validator<DistributedConfig> 
 
     private AciService aciService;
     private IndexingService indexingService;
-    private IdolAnnotationsProcessorFactory processorFactory;
+    private ProcessorFactory processorFactory;
 
     /**
      * @param aciService The AciService to use for validation
@@ -35,9 +35,9 @@ public class DistributedConfigValidator implements Validator<DistributedConfig> 
     }
 
     /**
-     * @param processorFactory The {@link IdolAnnotationsProcessorFactory} to use for validation
+     * @param processorFactory The {@link ProcessorFactory} to use for validation
      */
-    public void setProcessorFactory(final IdolAnnotationsProcessorFactory processorFactory) {
+    public void setProcessorFactory(final ProcessorFactory processorFactory) {
         this.processorFactory = processorFactory;
     }
 

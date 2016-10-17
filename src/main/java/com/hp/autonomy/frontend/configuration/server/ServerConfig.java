@@ -4,8 +4,8 @@
  */
 package com.hp.autonomy.frontend.configuration.server;
 
-import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
+import com.autonomy.aci.client.services.Processor;
 import com.autonomy.aci.client.transport.AciServerDetails;
 import com.autonomy.aci.client.util.AciParameters;
 import com.autonomy.nonaci.ServerDetails;
@@ -19,13 +19,26 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.hp.autonomy.frontend.configuration.ConfigException;
 import com.hp.autonomy.frontend.configuration.validation.OptionalConfigurationComponent;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
+import com.hp.autonomy.types.idol.marshalling.ProcessorFactory;
+import com.hp.autonomy.types.idol.responses.GetChildrenResponseData;
+import com.hp.autonomy.types.idol.responses.GetStatusResponseData;
+import com.hp.autonomy.types.idol.responses.GetVersionResponseData;
+import com.hp.autonomy.types.requests.idol.actions.general.GeneralActions;
+import com.hp.autonomy.types.requests.idol.actions.status.StatusActions;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -73,7 +86,7 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
         productType = builder.getProductType();
         indexErrorMessage = builder.getIndexErrorMessage();
 
-        if(builder.productTypeRegex == null) {
+        if (builder.productTypeRegex == null) {
             productTypeRegex = null;
         } else {
             productTypeRegex = Pattern.compile(builder.productTypeRegex);
@@ -87,7 +100,7 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
      * @return A new ServerConfig whose settings replace the fields in this that are null with those from serverConfig
      */
     public ServerConfig merge(final ServerConfig serverConfig) {
-        if(serverConfig != null) {
+        if (serverConfig != null) {
             final Builder builder = new Builder();
 
             builder.setProtocol(protocol == null ? serverConfig.protocol : protocol);
@@ -136,62 +149,50 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
      * @param indexingService The {@link IndexingService} used to test the index port. This can be null if
      * @return A new ServerConfig with its indexing and service details filled in.
      */
-    public ServerConfig fetchServerDetails(final AciService aciService, final IndexingService indexingService) {
+    public ServerConfig fetchServerDetails(final AciService aciService, final IndexingService indexingService, final ProcessorFactory processorFactory) {
         final Builder builder = new Builder();
 
         builder.setProtocol(protocol);
         builder.setHost(host);
         builder.setPort(port);
 
-        final PortsResponse response;
+        final Ports ports = determinePorts(aciService, processorFactory);
 
-        try {
-            // getStatus doesn't always return ports, but does when an index port is used
-            if(indexErrorMessage == null) {
-                response = aciService.executeAction(toAciServerDetails(), new AciParameters("getChildren"), new PortsResponseProcessor("autn:port", "autn:serviceport"));
-            } else {
-                response = aciService.executeAction(toAciServerDetails(), new AciParameters("getStatus"), new PortsResponseProcessor("aciport", "serviceport", "indexport"));
-            }
-        } catch(final RuntimeException e) {
-            throw new IllegalArgumentException("Unable to connect to ACI server");
-        }
-
-        if(indexErrorMessage != null) {
-            final int indexPort = response.getIndexPort();
+        if (ports.indexPort != null) {
             final ServerDetails indexDetails = new ServerDetails();
-            indexDetails.setHost(getHost());
-            indexDetails.setPort(indexPort);
+            indexDetails.setHost(host);
+            indexDetails.setPort(ports.indexPort);
             boolean isIndexPortValid = false;
 
-            for(final ServerDetails.TransportProtocol protocol : Arrays.asList(ServerDetails.TransportProtocol.HTTP, ServerDetails.TransportProtocol.HTTPS)) {
+            for (final ServerDetails.TransportProtocol protocol : Arrays.asList(ServerDetails.TransportProtocol.HTTP, ServerDetails.TransportProtocol.HTTPS)) {
                 indexDetails.setProtocol(protocol);
 
-                if(testIndexingConnection(indexDetails, indexingService, indexErrorMessage)) {
+                if (testIndexingConnection(indexDetails, indexingService, indexErrorMessage)) {
                     // test http first. If the server is https, it will give an error (quickly),
                     // whereas the timeout when doing https to a http server takes a really long time
                     builder.setIndexProtocol(protocol);
-                    builder.setIndexPort(indexPort);
+                    builder.setIndexPort(ports.indexPort);
 
                     isIndexPortValid = true;
                     break;
                 }
             }
 
-            if(!isIndexPortValid) {
+            if (!isIndexPortValid) {
                 throw new IllegalArgumentException("Server does not have a valid index port");
             }
         }
 
-        final int servicePort = response.getServicePort();
+        final int servicePort = ports.servicePort;
         final AciServerDetails servicePortDetails = new AciServerDetails();
-        servicePortDetails.setHost(getHost());
+        servicePortDetails.setHost(host);
         servicePortDetails.setPort(servicePort);
 
-        for(final AciServerDetails.TransportProtocol protocol : Arrays.asList(AciServerDetails.TransportProtocol.HTTP, AciServerDetails.TransportProtocol.HTTPS)) {
+        for (final AciServerDetails.TransportProtocol protocol : Arrays.asList(AciServerDetails.TransportProtocol.HTTP, AciServerDetails.TransportProtocol.HTTPS)) {
             servicePortDetails.setProtocol(protocol);
             servicePortDetails.setPort(servicePort);
 
-            if(testServicePortConnection(servicePortDetails, aciService)) {
+            if (testServicePortConnection(servicePortDetails, aciService, processorFactory)) {
                 // test http first. If the server is https, it will give an error (quickly),
                 // whereas the timeout when doing https to a http server takes a really long time
                 builder.setServiceProtocol(protocol);
@@ -206,10 +207,29 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
         throw new IllegalArgumentException("Server does not have a valid service port");
     }
 
-    private boolean testServicePortConnection(final AciServerDetails serviceDetails, final AciService aciService) {
+    private Ports determinePorts(final AciService aciService, final ProcessorFactory processorFactory) {
         try {
-            return aciService.executeAction(serviceDetails, new AciParameters("getstatus"), new NoopProcessor());
-        } catch(final Exception e) {
+            // getStatus doesn't always return ports, but does when an index port is used
+            final boolean useGetStatusToDeterminePorts = indexErrorMessage != null;
+            if (useGetStatusToDeterminePorts) {
+                final Processor<GetStatusResponseData> processor = processorFactory.getResponseDataProcessor(GetStatusResponseData.class);
+                final GetStatusResponseData getStatusResponseData = aciService.executeAction(toAciServerDetails(), new AciParameters(StatusActions.GetStatus.name()), processor);
+                return new Ports(getStatusResponseData.getAciport(), getStatusResponseData.getIndexport(), getStatusResponseData.getServiceport());
+            } else {
+                final Processor<GetChildrenResponseData> processor = processorFactory.getResponseDataProcessor(GetChildrenResponseData.class);
+                final GetChildrenResponseData responseData = aciService.executeAction(toAciServerDetails(), new AciParameters(GeneralActions.GetChildren.name()), processor);
+                return new Ports(responseData.getPort(), null, responseData.getServiceport());
+            }
+        } catch (final RuntimeException e) {
+            throw new IllegalArgumentException("Unable to connect to ACI server", e);
+        }
+    }
+
+    private boolean testServicePortConnection(final AciServerDetails serviceDetails, final AciService aciService, final ProcessorFactory processorFactory) {
+        try {
+            aciService.executeAction(serviceDetails, new AciParameters("getstatus"), processorFactory.getVoidProcessor());
+            return true;
+        } catch (final Exception e) {
             return false;
         }
     }
@@ -217,10 +237,10 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
     private boolean testIndexingConnection(final ServerDetails indexDetails, final IndexingService indexingService, final String errorMessage) {
         try {
             indexingService.executeCommand(indexDetails, new IndexCommandImpl("test"));
-        } catch(final IndexingException e) {
+        } catch (final IndexingException e) {
             // we got back a response from the index port
             return e.getMessage().contains(errorMessage);
-        } catch(final RuntimeException e) {
+        } catch (final RuntimeException e) {
             // any other kind of exception is bad
         }
 
@@ -253,7 +273,7 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
      * @param aciService       The {@link AciService} to use for validation
      * @param indexingService  The {@link IndexingService} to use for validation. If the server does not support indexing
      *                         this may be null
-     * @param processorFactory The {@link IdolAnnotationsProcessorFactory}
+     * @param processorFactory The {@link ProcessorFactory}
      * @return A {@link ValidationResult} which will be
      * <ul>
      * <li>Valid if the server config is valid</li>
@@ -262,12 +282,12 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
      * <li>If it is invalid for any other reason, the data will be a {@link ServerConfig.Validation}</li>
      * </ul>
      */
-    public ValidationResult<?> validate(final AciService aciService, final IndexingService indexingService, final IdolAnnotationsProcessorFactory processorFactory) {
+    public ValidationResult<?> validate(final AciService aciService, final IndexingService indexingService, final ProcessorFactory processorFactory) {
         // if the host is blank further testing is futile
         try {
             // string doesn't matter here as we swallow the exception
             basicValidate(null);
-        } catch(final ConfigException e) {
+        } catch (final ConfigException e) {
             return new ValidationResult<>(false, Validation.REQUIRED_FIELD_MISSING);
         }
 
@@ -275,17 +295,17 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
 
         try {
             isCorrectVersion = testServerVersion(aciService, processorFactory);
-        } catch(final RuntimeException e) {
+        } catch (final RuntimeException e) {
             LOGGER.debug("Error validating server version for {}", productType);
             LOGGER.debug("", e);
             return new ValidationResult<>(false, Validation.CONNECTION_ERROR);
         }
 
-        if(!isCorrectVersion) {
-            if(productTypeRegex == null) {
+        if (!isCorrectVersion) {
+            if (productTypeRegex == null) {
                 final List<String> friendlyNames = new ArrayList<>();
 
-                for(final ProductType productType : this.productType) {
+                for (final ProductType productType : this.productType) {
                     friendlyNames.add(productType.getFriendlyName());
                 }
 
@@ -297,18 +317,18 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
         }
 
         try {
-            final ServerConfig serverConfig = fetchServerDetails(aciService, indexingService);
+            final ServerConfig serverConfig = fetchServerDetails(aciService, indexingService, processorFactory);
 
             final boolean result = serverConfig.getServicePort() > 0;
 
-            if(indexErrorMessage == null) {
+            if (indexErrorMessage == null) {
                 return new ValidationResult<>(result, Validation.SERVICE_PORT_ERROR);
             } else {
                 return new ValidationResult<>(result && serverConfig.getIndexPort() > 0,
-                                              Validation.SERVICE_OR_INDEX_PORT_ERROR);
+                        Validation.SERVICE_OR_INDEX_PORT_ERROR);
             }
 
-        } catch(final RuntimeException e) {
+        } catch (final RuntimeException e) {
             LOGGER.debug("Error validating config", e);
             return new ValidationResult<>(false, Validation.FETCH_PORT_ERROR);
         }
@@ -321,43 +341,27 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
      */
     @Override
     public void basicValidate(final String component) throws ConfigException {
-        if(getPort() <= 0 || getPort() > 65535) {
+        if (getPort() <= 0 || getPort() > 65535) {
             throw new ConfigException(component,
-                                      component + ": port number must be between 1 and 65535.");
-        } else if(StringUtils.isBlank(getHost())) {
+                    component + ": port number must be between 1 and 65535.");
+        } else if (StringUtils.isBlank(getHost())) {
             throw new ConfigException(component,
-                                      component + ": host name must not be blank.");
+                    component + ": host name must not be blank.");
         }
     }
 
-    private boolean testServerVersion(final AciService aciService, final IdolAnnotationsProcessorFactory processorFactory) {
+    private boolean testServerVersion(final AciService aciService, final ProcessorFactory processorFactory) {
         // Community's ProductName is just IDOL, so we need to check the product type
-        final GetVersionResponse versionResponse = aciService
+        final GetVersionResponseData versionResponseData = aciService
                 .executeAction(toAciServerDetails(),
-                               new AciParameters("getversion"),
-                               processorFactory.listProcessorForClass(GetVersionResponse.class))
-                .get(0);
+                        new AciParameters(GeneralActions.GetVersion.name()),
+                        processorFactory.getResponseDataProcessor(GetVersionResponseData.class));
 
-        final Set<String> serverProductTypes = versionResponse.getProductTypes();
+        final Collection<String> serverProductTypes = new HashSet<>(Arrays.asList(versionResponseData.getProducttypecsv().split(",")));
 
-        if(productTypeRegex == null) {
-            final List<String> productTypeNames = new ArrayList<>(productType.size());
-
-            for(final ProductType productType : this.productType) {
-                productTypeNames.add(productType.name());
-            }
-
-            // essentially this is a containsAny
-            return !Collections.disjoint(serverProductTypes, productTypeNames);
-        } else {
-            for(final String serverProductType : serverProductTypes) {
-                if(productTypeRegex.matcher(serverProductType).matches()) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
+        return productTypeRegex == null
+                ? productType.stream().anyMatch(p -> serverProductTypes.contains(p.name()))
+                : serverProductTypes.stream().anyMatch(serverProductType -> productTypeRegex.matcher(serverProductType).matches());
     }
 
     /**
@@ -412,5 +416,12 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
         public ServerConfig build() {
             return new ServerConfig(this);
         }
+    }
+
+    @AllArgsConstructor
+    private static class Ports {
+        final int aciPort;
+        final Integer indexPort;
+        final int servicePort;
     }
 }

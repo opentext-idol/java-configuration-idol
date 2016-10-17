@@ -6,7 +6,7 @@
 package com.hp.autonomy.frontend.configuration.aci;
 
 import com.autonomy.aci.client.transport.AciServerDetails;
-import com.hp.autonomy.frontend.configuration.server.SecurityType;
+import com.hp.autonomy.types.idol.responses.SecurityType;
 
 import java.util.List;
 
