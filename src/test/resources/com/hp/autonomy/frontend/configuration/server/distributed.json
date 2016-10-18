@@ -1,0 +1,33 @@
+{
+  "distributed": false,
+  "standard": {
+    "protocol": "HTTP",
+    "host": "",
+    "port": 9050,
+    "productType": [
+      "AXE",
+      "DAH",
+      "IDOLPROXY"
+    ],
+    "indexErrorMessage": "BADLY FORMATTED REQUEST"
+  },
+  "dih": {
+    "protocol": "HTTP",
+    "host": "",
+    "port": 9170,
+    "productType": [
+      "DIH",
+      "IDOLPROXY"
+    ],
+    "indexErrorMessage": "BADLY FORMATTED REQUEST"
+  },
+  "dah": {
+    "protocol": "HTTP",
+    "host": "",
+    "port": 9160,
+    "productType": [
+      "DAH",
+      "IDOLPROXY"
+    ]
+  }
+}

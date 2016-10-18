@@ -10,22 +10,14 @@ import org.hamcrest.Matcher;
 import org.mockito.ArgumentMatcher;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 
 import static org.hamcrest.core.AllOf.allOf;
 
 class SetContainingItems<T> extends ArgumentMatcher<Set<? super T>> {
 
-    private final Set<? super T> set = new HashSet<>();
-    private Matcher<? super T> matcher;
-
-    @SafeVarargs
-    private SetContainingItems(final T... items) {
-        set.addAll(Arrays.asList(items));
-    }
+    private final Matcher<? super T> matcher;
 
     private SetContainingItems(final Matcher<? super T> matcher) {
         this.matcher = matcher;
@@ -33,16 +25,10 @@ class SetContainingItems<T> extends ArgumentMatcher<Set<? super T>> {
 
     @SafeVarargs
     @Factory
-    static <T> SetContainingItems<T> isSetWithItems(final T... items) {
-        return new SetContainingItems<>(items);
-    }
+    static <T> Matcher<Set<T>> isSetWithItems(final Matcher<T>... matchers) {
+        final Collection<Matcher<? super Set<T>>> all = new ArrayList<>(matchers.length);
 
-    @SafeVarargs
-    @Factory
-    static <T> Matcher<Set<T>> isSetWithItems(final Matcher<? super T>... matchers) {
-        final List<Matcher<? super Set<T>>> all = new ArrayList<>(matchers.length);
-
-        for (final Matcher<? super T> elementMatcher : matchers) {
+        for (final Matcher<T> elementMatcher : matchers) {
             // Doesn't forward to hasItem() method so compiler can sort out generics.
             all.add(new SetContainingItems<>(elementMatcher));
         }
@@ -56,18 +42,13 @@ class SetContainingItems<T> extends ArgumentMatcher<Set<? super T>> {
             return false;
         }
 
-        final Set<?> itemAsSet = (Set<?>) item;
-
-        if (matcher == null) {
-            return set.containsAll(itemAsSet);
-        } else {
-            for (final Object setItem : itemAsSet) {
-                if (matcher.matches(setItem)) {
-                    return true;
-                }
+        final Iterable<?> itemAsSet = (Iterable<?>) item;
+        for (final Object setItem : itemAsSet) {
+            if (matcher.matches(setItem)) {
+                return true;
             }
-
-            return false;
         }
+
+        return false;
     }
 }

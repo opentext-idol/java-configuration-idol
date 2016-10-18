@@ -8,30 +8,36 @@ package com.hp.autonomy.frontend.configuration.server;
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.services.Processor;
 import com.autonomy.aci.client.transport.AciParameter;
+import com.autonomy.aci.client.transport.AciServerDetails;
 import com.autonomy.nonaci.ServerDetails;
 import com.autonomy.nonaci.indexing.IndexCommand;
 import com.autonomy.nonaci.indexing.IndexingException;
 import com.autonomy.nonaci.indexing.IndexingService;
+import com.hp.autonomy.frontend.configuration.ConfigurationComponentTest;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
 import com.hp.autonomy.types.idol.marshalling.ProcessorFactory;
 import com.hp.autonomy.types.idol.responses.GetChildrenResponseData;
 import com.hp.autonomy.types.idol.responses.GetStatusResponseData;
 import com.hp.autonomy.types.idol.responses.GetVersionResponseData;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Factory;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.boot.test.json.JsonContent;
+import org.springframework.boot.test.json.ObjectContent;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
 
 import static com.hp.autonomy.frontend.configuration.server.IsValidMatcher.valid;
 import static com.hp.autonomy.frontend.configuration.server.ServerConfigTest.IsAciParameter.aciParameter;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
@@ -41,7 +47,7 @@ import static org.mockito.Mockito.when;
 
 @Slf4j
 @RunWith(MockitoJUnitRunner.class)
-public class ServerConfigTest {
+public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
     @Mock
     private Processor<Void> voidProcessor;
     @Mock
@@ -53,8 +59,9 @@ public class ServerConfigTest {
     @Mock
     private ProcessorFactory processorFactory;
 
-    @Before
+    @Override
     public void setUp() {
+        super.setUp();
         when(processorFactory.getVoidProcessor()).thenReturn(voidProcessor);
         when(processorFactory.getResponseDataProcessor(GetVersionResponseData.class)).thenReturn(getVersionProcessor);
     }
@@ -83,10 +90,10 @@ public class ServerConfigTest {
                 any()
         )).thenReturn(true);
 
-        final ServerConfig serverConfig = new ServerConfig.Builder()
-                .setHost("example.com")
-                .setPort(6666)
-                .setProductType(Collections.singleton(productType))
+        final ServerConfig serverConfig = ServerConfig.builder()
+                .host("example.com")
+                .port(6666)
+                .productType(Collections.singleton(productType))
                 .build();
 
         assertThat(serverConfig.validate(aciService, null, processorFactory), is(valid()));
@@ -122,11 +129,11 @@ public class ServerConfigTest {
                 any(IndexCommand.class)
         )).thenThrow(new IndexingException(indexErrorMessage));
 
-        final ServerConfig serverConfig = new ServerConfig.Builder()
-                .setHost("example.com")
-                .setPort(7666)
-                .setProductType(Collections.singleton(productType))
-                .setIndexErrorMessage(indexErrorMessage)
+        final ServerConfig serverConfig = ServerConfig.builder()
+                .host("example.com")
+                .port(7666)
+                .productType(Collections.singleton(productType))
+                .indexErrorMessage(indexErrorMessage)
                 .build();
 
         assertThat(serverConfig.validate(aciService, indexingService, processorFactory), is(valid()));
@@ -161,11 +168,11 @@ public class ServerConfigTest {
                 any(IndexCommand.class)
         )).thenThrow(new IndexingException("ERRORPARAMBAD"));
 
-        final ServerConfig serverConfig = new ServerConfig.Builder()
-                .setHost("example.com")
-                .setPort(7666)
-                .setProductType(Collections.singleton(productType))
-                .setIndexErrorMessage("Bad command or file name")
+        final ServerConfig serverConfig = ServerConfig.builder()
+                .host("example.com")
+                .port(7666)
+                .productType(Collections.singleton(productType))
+                .indexErrorMessage("Bad command or file name")
                 .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
@@ -186,10 +193,10 @@ public class ServerConfigTest {
 
         // no further stubbing required because we won't get that far
 
-        final ServerConfig serverConfig = new ServerConfig.Builder()
-                .setHost("example.com")
-                .setPort(6666)
-                .setProductType(Collections.singleton(ProductType.AXE))
+        final ServerConfig serverConfig = ServerConfig.builder()
+                .host("example.com")
+                .port(6666)
+                .productType(Collections.singleton(ProductType.AXE))
                 .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
@@ -216,10 +223,10 @@ public class ServerConfigTest {
         )).thenReturn(mockGetChildrenResponse(6666, null));
 
 
-        final ServerConfig serverConfig = new ServerConfig.Builder()
-                .setHost("example.com")
-                .setPort(6666)
-                .setProductType(Collections.singleton(productType))
+        final ServerConfig serverConfig = ServerConfig.builder()
+                .host("example.com")
+                .port(6666)
+                .productType(Collections.singleton(productType))
                 .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
@@ -246,11 +253,11 @@ public class ServerConfigTest {
         )).thenReturn(mockGetChildrenResponse(7666, 7668));
 
         final String indexErrorMessage = "Bad command or file name";
-        final ServerConfig serverConfig = new ServerConfig.Builder()
-                .setHost("example.com")
-                .setPort(7666)
-                .setProductType(Collections.singleton(productType))
-                .setIndexErrorMessage(indexErrorMessage)
+        final ServerConfig serverConfig = ServerConfig.builder()
+                .host("example.com")
+                .port(7666)
+                .productType(Collections.singleton(productType))
+                .indexErrorMessage(indexErrorMessage)
                 .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
@@ -260,10 +267,10 @@ public class ServerConfigTest {
 
     @Test
     public void testValidateWithInvalidHost() {
-        final ServerConfig serverConfig = new ServerConfig.Builder()
-                .setHost("")
-                .setPort(6666)
-                .setProductType(Collections.singleton(ProductType.SERVICECOORDINATOR))
+        final ServerConfig serverConfig = ServerConfig.builder()
+                .host("")
+                .port(6666)
+                .productType(Collections.singleton(ProductType.SERVICECOORDINATOR))
                 .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
@@ -273,10 +280,10 @@ public class ServerConfigTest {
 
     @Test
     public void testValidateWithInvalidPort() {
-        final ServerConfig serverConfig = new ServerConfig.Builder()
-                .setHost("example.com")
-                .setPort(0)
-                .setProductType(Collections.singleton(ProductType.SERVICECOORDINATOR))
+        final ServerConfig serverConfig = ServerConfig.builder()
+                .host("example.com")
+                .port(0)
+                .productType(Collections.singleton(ProductType.SERVICECOORDINATOR))
                 .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
@@ -307,10 +314,10 @@ public class ServerConfigTest {
                 any()
         )).thenReturn(true);
 
-        final ServerConfig serverConfig = new ServerConfig.Builder()
-                .setHost("example.com")
-                .setPort(7666)
-                .setProductType(EnumSet.of(ProductType.AXE, ProductType.DAH, ProductType.IDOLPROXY))
+        final ServerConfig serverConfig = ServerConfig.builder()
+                .host("example.com")
+                .port(7666)
+                .productType(EnumSet.of(ProductType.AXE, ProductType.DAH, ProductType.IDOLPROXY))
                 .build();
 
         assertThat(serverConfig.validate(aciService, null, processorFactory), is(valid()));
@@ -338,10 +345,10 @@ public class ServerConfigTest {
                 any()
         )).thenReturn(true);
 
-        final ServerConfig serverConfig = new ServerConfig.Builder()
-                .setHost("example.com")
-                .setPort(7008)
-                .setProductTypeRegex(".*?CONNECTOR")
+        final ServerConfig serverConfig = ServerConfig.builder()
+                .host("example.com")
+                .port(7008)
+                .productTypeRegexFromString(".*?CONNECTOR")
                 .build();
 
         assertThat(serverConfig.validate(aciService, null, processorFactory), is(valid()));
@@ -369,16 +376,53 @@ public class ServerConfigTest {
                 any()
         )).thenReturn(true);
 
-        final ServerConfig serverConfig = new ServerConfig.Builder()
-                .setHost("example.com")
-                .setPort(7008)
-                .setProductTypeRegex(".*?SERVER")
+        final ServerConfig serverConfig = ServerConfig.builder()
+                .host("example.com")
+                .port(7008)
+                .productTypeRegexFromString(".*?SERVER")
                 .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, null, processorFactory);
 
         assertThat(validationResult, is(not(valid())));
         assertThat(validationResult.getData(), CoreMatchers.is(ServerConfig.Validation.REGULAR_EXPRESSION_MATCH_ERROR));
+    }
+
+    @Override
+    protected Class<ServerConfig> getType() {
+        return ServerConfig.class;
+    }
+
+    @Override
+    protected ServerConfig constructComponent() {
+        return ServerConfig.builder()
+                .host("localhost")
+                .port(9000)
+                .build();
+    }
+
+    @Override
+    protected String sampleJson() throws IOException {
+        return IOUtils.toString(getClass().getResourceAsStream("/com/hp/autonomy/frontend/configuration/server/server.json"));
+    }
+
+    @Override
+    protected void validateJson(final JsonContent<ServerConfig> jsonContent) {
+        jsonContent.assertThat().hasJsonPathStringValue("@.host", "localhost");
+        jsonContent.assertThat().hasJsonPathNumberValue("@.port", 9000);
+    }
+
+    @Override
+    protected void validateParsedComponent(final ObjectContent<ServerConfig> objectContent) {
+        objectContent.assertThat().hasFieldOrPropertyWithValue("protocol", AciServerDetails.TransportProtocol.HTTP);
+        objectContent.assertThat().hasFieldOrPropertyWithValue("host", "localhost");
+        objectContent.assertThat().hasFieldOrPropertyWithValue("port", 16000);
+        assertThat(objectContent.getObject().getProductType(), hasSize(3));
+    }
+
+    @Override
+    protected void validateMergedComponent(final ObjectContent<ServerConfig> objectContent) {
+
     }
 
     private GetVersionResponseData mockGetVersionResponse(final String productType) {

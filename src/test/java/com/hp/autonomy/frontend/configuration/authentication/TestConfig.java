@@ -5,8 +5,15 @@
 
 package com.hp.autonomy.frontend.configuration.authentication;
 
-class TestConfig implements AuthenticationConfig<TestConfig> {
-    private Authentication<?> authentication;
+import com.hp.autonomy.frontend.configuration.SimpleComponent;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+
+@SuppressWarnings("WeakerAccess")
+@Builder
+@AllArgsConstructor
+public class TestConfig extends SimpleComponent<TestConfig> implements AuthenticationConfig<TestConfig> {
+    private final Authentication<?> authentication;
 
     @Override
     public TestConfig generateDefaultLogin() {

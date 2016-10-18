@@ -17,14 +17,16 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.hp.autonomy.frontend.configuration.ConfigException;
 import com.hp.autonomy.frontend.configuration.ConfigurationComponent;
+import com.hp.autonomy.frontend.configuration.SimpleComponent;
 import com.hp.autonomy.frontend.configuration.validation.OptionalConfigurationComponent;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
 import com.hp.autonomy.types.idol.marshalling.ProcessorFactory;
 import com.hp.autonomy.types.requests.idol.actions.general.GeneralActions;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.experimental.Accessors;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,10 +40,14 @@ import org.slf4j.LoggerFactory;
  * If an IDOL component is only required to be distributed, it is sufficient to use {@link ServerConfig} and configure
  * the set of product types to include the required distribution component.
  */
-@Data
-@JsonDeserialize(builder = DistributedConfig.Builder.class)
+@SuppressWarnings({"InstanceVariableOfConcreteClass", "JavaDoc", "WeakerAccess", "DefaultAnnotationParam"})
+@Getter
+@Builder(toBuilder = true)
+@EqualsAndHashCode(callSuper = false)
+@ToString
+@JsonDeserialize(builder = DistributedConfig.DistributedConfigBuilder.class)
 @JsonTypeName("DistributedConfig")
-public class DistributedConfig implements OptionalConfigurationComponent<DistributedConfig> {
+public class DistributedConfig extends SimpleComponent<DistributedConfig> implements OptionalConfigurationComponent<DistributedConfig> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerConfig.class);
 
@@ -65,34 +71,6 @@ public class DistributedConfig implements OptionalConfigurationComponent<Distrib
      */
     private final ServerConfig dah;
 
-    private DistributedConfig(final Builder builder) {
-        distributed = builder.distributed;
-        standard = builder.standard;
-        dih = builder.dih;
-        dah = builder.dah;
-    }
-
-    /**
-     * Merges this DistributedConfig with another DistributedConfig.
-     *
-     * @param distributedConfig The DistributedConfig to merge with.
-     * @return A new DistributedConfig whose settings replace the fields in this that are null with those from distributedConfig
-     */
-    public DistributedConfig merge(final DistributedConfig distributedConfig) {
-        if (distributedConfig != null) {
-            final Builder builder = new Builder();
-
-            builder.setDistributed(distributed == null ? distributedConfig.distributed : distributed);
-            builder.setStandard(standard == null ? distributedConfig.standard : standard.merge(distributedConfig.standard));
-            builder.setDih(dih == null ? distributedConfig.dih : dih.merge(distributedConfig.dih));
-            builder.setDah(dah == null ? distributedConfig.dah : dah.merge(distributedConfig.dah));
-
-            return builder.build();
-        }
-
-        return this;
-    }
-
     /**
      * Fetches the port details for the currently configured config
      *
@@ -101,13 +79,13 @@ public class DistributedConfig implements OptionalConfigurationComponent<Distrib
      * @return A DistributedConfig whose index and service ports have been filled in appropriately
      */
     public DistributedConfig fetchServerDetails(final AciService aciService, final IndexingService indexingService, final ProcessorFactory processorFactory) {
-        final Builder builder = new Builder(this);
+        final DistributedConfigBuilder builder = toBuilder();
 
         if (distributed) {
-            builder.setDih(dih.fetchServerDetails(aciService, indexingService, processorFactory));
-            builder.setDah(dah.fetchServerDetails(aciService, indexingService, processorFactory));
+            builder.dih(dih.fetchServerDetails(aciService, indexingService, processorFactory));
+            builder.dah(dah.fetchServerDetails(aciService, indexingService, processorFactory));
         } else {
-            builder.setStandard(standard.fetchServerDetails(aciService, indexingService, processorFactory));
+            builder.standard(standard.fetchServerDetails(aciService, indexingService, processorFactory));
         }
 
         return builder.build();
@@ -118,11 +96,7 @@ public class DistributedConfig implements OptionalConfigurationComponent<Distrib
      * settings, otherwise they will be the standard settings.
      */
     public AciServerDetails toAciServerDetails() {
-        if (distributed) {
-            return dah.toAciServerDetails();
-        } else {
-            return standard.toAciServerDetails();
-        }
+        return distributed ? dah.toAciServerDetails() : standard.toAciServerDetails();
     }
 
     /**
@@ -138,11 +112,7 @@ public class DistributedConfig implements OptionalConfigurationComponent<Distrib
      * settings, otherwise they will be the standard settings.
      */
     public ServerDetails toServerDetails() {
-        if (distributed) {
-            return dih.toServerDetails();
-        } else {
-            return standard.toServerDetails();
-        }
+        return distributed ? dih.toServerDetails() : standard.toServerDetails();
     }
 
     /**
@@ -152,8 +122,8 @@ public class DistributedConfig implements OptionalConfigurationComponent<Distrib
      * If using a DAH this method requires that a call to LanguageSettings will succeed. This requirement may be removed
      * in a future version.
      *
-     * @param aciService       The {@link com.autonomy.aci.client.services.AciService} to use for validation
-     * @param indexingService  The {@link com.autonomy.nonaci.indexing.IndexingService} to use for validation. If the server does not support indexing
+     * @param aciService       The {@link AciService} to use for validation
+     * @param indexingService  The {@link IndexingService} to use for validation. If the server does not support indexing
      *                         this may be null
      * @param processorFactory The {@link ProcessorFactory} used to process the responses
      * @return A validation result which will be:
@@ -185,7 +155,7 @@ public class DistributedConfig implements OptionalConfigurationComponent<Distrib
                         aciService.executeAction(dah.toAciServerDetails(),
                                 new AciParameters(GeneralActions.LanguageSettings.name()),
                                 processorFactory.getVoidProcessor());
-                    } catch (final AciErrorException e) {
+                    } catch (final AciErrorException ignored) {
                         dahValid = false;
                         distributedValidationResultDetails.setDahValidationResult(new ValidationResult<>(false, Validation.LANGUAGE_SETTINGS));
                     }
@@ -224,29 +194,8 @@ public class DistributedConfig implements OptionalConfigurationComponent<Distrib
         return true;
     }
 
-    @NoArgsConstructor
-    @JsonPOJOBuilder(withPrefix = "set")
-    @Setter
-    @Accessors(chain = true)
-    public static class Builder {
-
-        private Boolean distributed;
-
-        private ServerConfig standard;
-
-        private ServerConfig dih;
-        private ServerConfig dah;
-
-        public Builder(final DistributedConfig distributedConfig) {
-            distributed = distributedConfig.distributed;
-            standard = distributedConfig.standard;
-            dih = distributedConfig.dih;
-            dah = distributedConfig.dah;
-        }
-
-        public DistributedConfig build() {
-            return new DistributedConfig(this);
-        }
+    @JsonPOJOBuilder(withPrefix = "")
+    public static class DistributedConfigBuilder {
     }
 
     public enum Validation {

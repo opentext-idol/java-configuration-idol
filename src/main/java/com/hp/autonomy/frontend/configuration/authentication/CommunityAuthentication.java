@@ -19,14 +19,18 @@ import com.hp.autonomy.frontend.configuration.server.ServerConfig;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
 import com.hp.autonomy.types.idol.marshalling.ProcessorFactory;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * {@link Authentication} representing a Community server.
  */
-@SuppressWarnings({"WeakerAccess", "JavaDoc", "InstanceVariableOfConcreteClass"})
+@SuppressWarnings({"WeakerAccess", "JavaDoc", "InstanceVariableOfConcreteClass", "DefaultAnnotationParam"})
 @Getter
 @Builder(toBuilder = true)
+@EqualsAndHashCode(callSuper = false)
+@ToString
 @JsonDeserialize(builder = CommunityAuthentication.CommunityAuthenticationBuilder.class)
 @JsonTypeName("CommunityAuthentication")
 public class CommunityAuthentication extends SimpleComponent<CommunityAuthentication> implements Authentication<CommunityAuthentication> {

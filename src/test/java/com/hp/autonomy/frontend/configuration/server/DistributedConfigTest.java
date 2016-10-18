@@ -10,17 +10,22 @@ import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.services.Processor;
 import com.autonomy.aci.client.transport.AciServerDetails;
 import com.autonomy.nonaci.indexing.IndexingService;
+import com.hp.autonomy.frontend.configuration.ConfigurationComponentTest;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
 import com.hp.autonomy.types.idol.marshalling.ProcessorFactory;
 import com.hp.autonomy.types.idol.responses.GetVersionResponseData;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.hamcrest.Matchers;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.boot.test.json.JsonContent;
+import org.springframework.boot.test.json.ObjectContent;
+
+import java.io.IOException;
 
 import static com.hp.autonomy.frontend.configuration.server.IsValidMatcher.valid;
 import static com.hp.autonomy.frontend.configuration.server.ServerConfigTest.IsAciParameter.aciParameter;
@@ -37,7 +42,7 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings("CastToConcreteClass")
 @Slf4j
 @RunWith(MockitoJUnitRunner.class)
-public class DistributedConfigTest {
+public class DistributedConfigTest extends ConfigurationComponentTest<DistributedConfig> {
     @Mock
     private Processor<Void> voidProcessor;
     @Mock
@@ -49,8 +54,9 @@ public class DistributedConfigTest {
     @Mock
     private ProcessorFactory processorFactory;
 
-    @Before
+    @Override
     public void setUp() {
+        super.setUp();
         when(processorFactory.getVoidProcessor()).thenReturn(voidProcessor);
         when(processorFactory.getResponseDataProcessor(GetVersionResponseData.class)).thenReturn(getVersionProcessor);
     }
@@ -62,9 +68,9 @@ public class DistributedConfigTest {
 
         Mockito.<ValidationResult<?>>when(standard.validate(aciService, indexingService, processorFactory)).thenReturn(validationResultOne);
 
-        final DistributedConfig distributedConfig = new DistributedConfig.Builder()
-            .setDistributed(false)
-            .setStandard(standard)
+        final DistributedConfig distributedConfig = DistributedConfig.builder()
+            .distributed(false)
+            .standard(standard)
             .build();
 
         final ValidationResult<?> validationResultA = distributedConfig.validate(aciService, indexingService, processorFactory);
@@ -84,10 +90,10 @@ public class DistributedConfigTest {
         Mockito.<ValidationResult<?>>when(dah.validate(aciService, indexingService, processorFactory)).thenReturn(validationResultOne);
         Mockito.<ValidationResult<?>>when(dih.validate(aciService, indexingService, processorFactory)).thenReturn(validationResultTwo);
 
-        final DistributedConfig distributedConfig = new DistributedConfig.Builder()
-            .setDistributed(true)
-            .setDih(dih)
-            .setDah(dah)
+        final DistributedConfig distributedConfig = DistributedConfig.builder()
+            .distributed(true)
+            .dih(dih)
+            .dah(dah)
             .build();
 
         final ValidationResult<?> validationResultDistributed = distributedConfig.validate(aciService, indexingService, processorFactory);
@@ -112,10 +118,10 @@ public class DistributedConfigTest {
         Mockito.<ValidationResult<?>>when(dah.validate(aciService, indexingService, processorFactory)).thenReturn(validationResultFail);
         Mockito.<ValidationResult<?>>when(dih.validate(aciService, indexingService, processorFactory)).thenReturn(validationResultFail);
 
-        final DistributedConfig distributedConfig = new DistributedConfig.Builder()
-            .setDistributed(true)
-            .setDih(dih)
-            .setDah(dah)
+        final DistributedConfig distributedConfig = DistributedConfig.builder()
+            .distributed(true)
+            .dih(dih)
+            .dah(dah)
             .build();
 
         final ValidationResult<?> validationResultDistributed = distributedConfig.validate(aciService, indexingService, processorFactory);
@@ -141,10 +147,10 @@ public class DistributedConfigTest {
         Mockito.<ValidationResult<?>>when(dah.validate(aciService, indexingService, processorFactory)).thenReturn(validationResultFail);
         Mockito.<ValidationResult<?>>when(dih.validate(aciService, indexingService, processorFactory)).thenReturn(validationResultSuccess);
 
-        final DistributedConfig distributedConfig = new DistributedConfig.Builder()
-            .setDistributed(true)
-            .setDih(dih)
-            .setDah(dah)
+        final DistributedConfig distributedConfig = DistributedConfig.builder()
+            .distributed(true)
+            .dih(dih)
+            .dah(dah)
             .build();
 
         final ValidationResult<?> validationResultDistributed = distributedConfig.validate(aciService, indexingService, processorFactory);
@@ -171,10 +177,10 @@ public class DistributedConfigTest {
         Mockito.<ValidationResult<?>>when(dah.validate(aciService, indexingService, processorFactory)).thenReturn(validationResultSuccess);
         Mockito.<ValidationResult<?>>when(dih.validate(aciService, indexingService, processorFactory)).thenReturn(validationResultFail);
 
-        final DistributedConfig distributedConfig = new DistributedConfig.Builder()
-            .setDistributed(true)
-            .setDih(dih)
-            .setDah(dah)
+        final DistributedConfig distributedConfig = DistributedConfig.builder()
+            .distributed(true)
+            .dih(dih)
+            .dah(dah)
             .build();
 
         final ValidationResult<?> validationResultDistributed = distributedConfig.validate(aciService, indexingService, processorFactory);
@@ -208,10 +214,10 @@ public class DistributedConfigTest {
             any()
         )).thenThrow(new AciErrorException());
 
-        final DistributedConfig distributedConfig = new DistributedConfig.Builder()
-            .setDistributed(true)
-            .setDih(dih)
-            .setDah(dah)
+        final DistributedConfig distributedConfig = DistributedConfig.builder()
+            .distributed(true)
+            .dih(dih)
+            .dah(dah)
             .build();
 
         final ValidationResult<?> distributedValidationResult = distributedConfig.validate(aciService, indexingService, processorFactory);
@@ -225,5 +231,51 @@ public class DistributedConfigTest {
 
         assertThat(validationDetails.getDahValidationResult(), is(not(valid())));
         assertThat(validationDetails.getDihValidationResult(), is(nullValue()));
+    }
+
+    @Override
+    protected Class<DistributedConfig> getType() {
+        return DistributedConfig.class;
+    }
+
+    @Override
+    protected DistributedConfig constructComponent() {
+        return DistributedConfig.builder()
+                .distributed(false)
+                .standard(ServerConfig.builder()
+                        .host("localhost")
+                        .port(9000)
+                        .build())
+                .build();
+    }
+
+    @Override
+    protected String sampleJson() throws IOException {
+        return IOUtils.toString(getClass().getResourceAsStream("/com/hp/autonomy/frontend/configuration/server/distributed.json"));
+    }
+
+    @Override
+    protected void validateJson(final JsonContent<DistributedConfig> jsonContent) {
+        jsonContent.assertThat().hasJsonPathBooleanValue("@.distributed", false);
+        jsonContent.assertThat().hasJsonPathStringValue("@.standard.host", "localhost");
+        jsonContent.assertThat().hasJsonPathNumberValue("@.standard.port", 9000);
+    }
+
+    @Override
+    protected void validateParsedComponent(final ObjectContent<DistributedConfig> objectContent) {
+        objectContent.assertThat().hasFieldOrPropertyWithValue("distributed", false);
+        objectContent.assertThat().hasFieldOrProperty("standard").isNotNull();
+        objectContent.assertThat().hasFieldOrProperty("dih").isNotNull();
+        objectContent.assertThat().hasFieldOrProperty("dah").isNotNull();
+    }
+
+    @Override
+    protected void validateMergedComponent(final ObjectContent<DistributedConfig> objectContent) {
+        final ServerConfig standard = objectContent.getObject().getStandard();
+        assertThat(standard.getHost(), is("localhost"));
+        assertThat(standard.getPort(), is(9000));
+        objectContent.assertThat().hasFieldOrProperty("standard").isNotNull();
+        objectContent.assertThat().hasFieldOrProperty("dih").isNotNull();
+        objectContent.assertThat().hasFieldOrProperty("dah").isNotNull();
     }
 }

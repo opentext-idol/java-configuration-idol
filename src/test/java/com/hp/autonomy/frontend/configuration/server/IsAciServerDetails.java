@@ -9,21 +9,8 @@ import com.autonomy.aci.client.transport.AciServerDetails;
 import org.mockito.ArgumentMatcher;
 
 class IsAciServerDetails extends ArgumentMatcher<AciServerDetails> {
-
     private final String host;
     private final int port;
-
-    private IsAciServerDetails() {
-        this(null, -1);
-    }
-
-    private IsAciServerDetails(final int port) {
-        this(null, port);
-    }
-
-    private IsAciServerDetails(final String host) {
-        this(host, -1);
-    }
 
     IsAciServerDetails(final String host, final int port) {
         this.host = host;

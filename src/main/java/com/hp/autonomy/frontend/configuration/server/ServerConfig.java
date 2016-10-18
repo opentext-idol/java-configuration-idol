@@ -14,9 +14,11 @@ import com.autonomy.nonaci.indexing.IndexingService;
 import com.autonomy.nonaci.indexing.impl.IndexCommandImpl;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.hp.autonomy.frontend.configuration.ConfigException;
+import com.hp.autonomy.frontend.configuration.SimpleComponent;
 import com.hp.autonomy.frontend.configuration.validation.OptionalConfigurationComponent;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
 import com.hp.autonomy.types.idol.marshalling.ProcessorFactory;
@@ -25,9 +27,13 @@ import com.hp.autonomy.types.idol.responses.GetStatusResponseData;
 import com.hp.autonomy.types.idol.responses.GetVersionResponseData;
 import com.hp.autonomy.types.requests.idol.actions.general.GeneralActions;
 import com.hp.autonomy.types.requests.idol.actions.status.StatusActions;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.experimental.Accessors;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,20 +50,25 @@ import java.util.regex.Pattern;
 /**
  * Configuration for an ACI server, which can also include index and service ports.
  */
-@Data
-@JsonDeserialize(builder = ServerConfig.Builder.class)
-public class ServerConfig implements OptionalConfigurationComponent<ServerConfig> {
-
+@SuppressWarnings({"JavaDoc", "WeakerAccess", "DefaultAnnotationParam"})
+@Getter
+@Builder(toBuilder = true)
+@EqualsAndHashCode(callSuper = false)
+@ToString
+@JsonDeserialize(builder = ServerConfig.ServerConfigBuilder.class)
+public class ServerConfig extends SimpleComponent<ServerConfig> implements OptionalConfigurationComponent<ServerConfig> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerConfig.class);
+
+    private static final int MAX_PORT = 65535;
 
     private final AciServerDetails.TransportProtocol protocol;
     private final String host;
-    private final int port;
+    private final Integer port;
 
     private final ServerDetails.TransportProtocol indexProtocol;
-    private final int indexPort;
+    private final Integer indexPort;
     private final AciServerDetails.TransportProtocol serviceProtocol;
-    private final int servicePort;
+    private final Integer servicePort;
 
     /**
      * @return The producttypecsv of the server, used for validation
@@ -75,53 +86,6 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
      */
     private final Pattern productTypeRegex;
 
-    private ServerConfig(final Builder builder) {
-        protocol = builder.getProtocol();
-        host = builder.getHost();
-        port = builder.getPort();
-        indexPort = builder.getIndexPort();
-        indexProtocol = builder.getIndexProtocol();
-        servicePort = builder.getServicePort();
-        serviceProtocol = builder.getServiceProtocol();
-        productType = builder.getProductType();
-        indexErrorMessage = builder.getIndexErrorMessage();
-
-        if (builder.productTypeRegex == null) {
-            productTypeRegex = null;
-        } else {
-            productTypeRegex = Pattern.compile(builder.productTypeRegex);
-        }
-    }
-
-    /**
-     * Merges this ServerConfig with another ServerConfig.
-     *
-     * @param serverConfig The ServerConfig to merge with.
-     * @return A new ServerConfig whose settings replace the fields in this that are null with those from serverConfig
-     */
-    public ServerConfig merge(final ServerConfig serverConfig) {
-        if (serverConfig != null) {
-            final Builder builder = new Builder();
-
-            builder.setProtocol(protocol == null ? serverConfig.protocol : protocol);
-            builder.setHost(host == null ? serverConfig.host : host);
-            builder.setPort(port == 0 ? serverConfig.port : port);
-            builder.setIndexPort(indexPort == 0 ? serverConfig.indexPort : indexPort);
-            builder.setIndexProtocol(indexProtocol == null ? serverConfig.indexProtocol : indexProtocol);
-            builder.setServicePort(servicePort == 0 ? serverConfig.servicePort : servicePort);
-            builder.setServiceProtocol(serviceProtocol == null ? serverConfig.serviceProtocol : serviceProtocol);
-            builder.setProductType(productType == null ? serverConfig.productType : productType);
-            builder.setIndexErrorMessage(indexErrorMessage == null ? serverConfig.indexErrorMessage : indexErrorMessage);
-
-            // we use Pattern here, but Builder takes String
-            builder.setProductTypeRegex(Objects.toString(productTypeRegex == null ? serverConfig.productTypeRegex : productTypeRegex, null));
-
-            return builder.build();
-        }
-
-        return this;
-    }
-
     /**
      * Creates a new ServerConfig with the given ServerDetails for indexing
      *
@@ -129,17 +93,10 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
      * @return A new ServerConfig with the supplied indexing details
      */
     public ServerConfig withIndexServer(final ServerDetails serverDetails) {
-        final Builder builder = new Builder();
-
-        builder.setProtocol(protocol);
-        builder.setHost(host);
-        builder.setPort(port);
-        builder.setIndexProtocol(serverDetails.getProtocol());
-        builder.setIndexPort(serverDetails.getPort());
-        builder.setServiceProtocol(serviceProtocol);
-        builder.setServicePort(servicePort);
-
-        return builder.build();
+        return toBuilder()
+                .indexProtocol(serverDetails.getProtocol())
+                .indexPort(serverDetails.getPort())
+                .build();
     }
 
     /**
@@ -150,11 +107,7 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
      * @return A new ServerConfig with its indexing and service details filled in.
      */
     public ServerConfig fetchServerDetails(final AciService aciService, final IndexingService indexingService, final ProcessorFactory processorFactory) {
-        final Builder builder = new Builder();
-
-        builder.setProtocol(protocol);
-        builder.setHost(host);
-        builder.setPort(port);
+        final ServerConfigBuilder builder = toBuilder();
 
         final Ports ports = determinePorts(aciService, processorFactory);
 
@@ -170,8 +123,8 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
                 if (testIndexingConnection(indexDetails, indexingService, indexErrorMessage)) {
                     // test http first. If the server is https, it will give an error (quickly),
                     // whereas the timeout when doing https to a http server takes a really long time
-                    builder.setIndexProtocol(protocol);
-                    builder.setIndexPort(ports.indexPort);
+                    builder.indexProtocol(protocol);
+                    builder.indexPort(ports.indexPort);
 
                     isIndexPortValid = true;
                     break;
@@ -195,8 +148,8 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
             if (testServicePortConnection(servicePortDetails, aciService, processorFactory)) {
                 // test http first. If the server is https, it will give an error (quickly),
                 // whereas the timeout when doing https to a http server takes a really long time
-                builder.setServiceProtocol(protocol);
-                builder.setServicePort(servicePort);
+                builder.serviceProtocol(protocol);
+                builder.servicePort(servicePort);
 
                 //Both index and service ports are valid
                 return builder.build();
@@ -229,18 +182,18 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
         try {
             aciService.executeAction(serviceDetails, new AciParameters("getstatus"), processorFactory.getVoidProcessor());
             return true;
-        } catch (final Exception e) {
+        } catch (final RuntimeException ignored) {
             return false;
         }
     }
 
-    private boolean testIndexingConnection(final ServerDetails indexDetails, final IndexingService indexingService, final String errorMessage) {
+    private boolean testIndexingConnection(final ServerDetails indexDetails, final IndexingService indexingService, final CharSequence errorMessage) {
         try {
             indexingService.executeCommand(indexDetails, new IndexCommandImpl("test"));
         } catch (final IndexingException e) {
             // we got back a response from the index port
             return e.getMessage().contains(errorMessage);
-        } catch (final RuntimeException e) {
+        } catch (final RuntimeException ignored) {
             // any other kind of exception is bad
         }
 
@@ -251,7 +204,7 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
      * @return A representation of this server as an {@link AciServerDetails}
      */
     public AciServerDetails toAciServerDetails() {
-        return new AciServerDetails(getProtocol(), getHost(), getPort());
+        return new AciServerDetails(protocol, host, port);
     }
 
     /**
@@ -260,8 +213,8 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
     public ServerDetails toServerDetails() {
         final ServerDetails serverDetails = new ServerDetails();
 
-        serverDetails.setHost(getHost());
-        serverDetails.setPort(getIndexPort());
+        serverDetails.setHost(host);
+        serverDetails.setPort(indexPort);
         serverDetails.setProtocol(indexProtocol);
 
         return serverDetails;
@@ -287,7 +240,7 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
         try {
             // string doesn't matter here as we swallow the exception
             basicValidate(null);
-        } catch (final ConfigException e) {
+        } catch (final ConfigException ignored) {
             return new ValidationResult<>(false, Validation.REQUIRED_FIELD_MISSING);
         }
 
@@ -319,14 +272,11 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
         try {
             final ServerConfig serverConfig = fetchServerDetails(aciService, indexingService, processorFactory);
 
-            final boolean result = serverConfig.getServicePort() > 0;
+            final boolean result = serverConfig.servicePort > 0;
 
-            if (indexErrorMessage == null) {
-                return new ValidationResult<>(result, Validation.SERVICE_PORT_ERROR);
-            } else {
-                return new ValidationResult<>(result && serverConfig.getIndexPort() > 0,
-                        Validation.SERVICE_OR_INDEX_PORT_ERROR);
-            }
+            final boolean indexPortPresent = indexErrorMessage != null;
+            return indexPortPresent ? new ValidationResult<>(result && serverConfig.indexPort > 0,
+                    Validation.SERVICE_OR_INDEX_PORT_ERROR) : new ValidationResult<>(result, Validation.SERVICE_PORT_ERROR);
 
         } catch (final RuntimeException e) {
             LOGGER.debug("Error validating config", e);
@@ -341,10 +291,10 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
      */
     @Override
     public void basicValidate(final String component) throws ConfigException {
-        if (getPort() <= 0 || getPort() > 65535) {
+        if (port <= 0 || port > MAX_PORT) {
             throw new ConfigException(component,
                     component + ": port number must be between 1 and 65535.");
-        } else if (StringUtils.isBlank(getHost())) {
+        } else if (StringUtils.isBlank(host)) {
             throw new ConfigException(component,
                     component + ": host name must not be blank.");
         }
@@ -368,7 +318,7 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
      * @return The service port details of this ServerConfig as an {@link AciServerDetails}
      */
     public AciServerDetails toServiceServerDetails() {
-        return new AciServerDetails(getServiceProtocol(), getHost(), getServicePort());
+        return new AciServerDetails(serviceProtocol, host, servicePort);
     }
 
     @Override
@@ -388,33 +338,30 @@ public class ServerConfig implements OptionalConfigurationComponent<ServerConfig
     }
 
     @Data
+    @AllArgsConstructor(access = AccessLevel.PACKAGE)
     public static class IncorrectServerType {
         private final Validation validation = Validation.INCORRECT_SERVER_TYPE;
         private final List<String> friendlyNames;
-
-        IncorrectServerType(final List<String> friendlyNames) {
-            this.friendlyNames = friendlyNames;
-        }
     }
 
-    @Data
-    @Accessors(chain = true)
-    @JsonPOJOBuilder(withPrefix = "set")
+    @SuppressWarnings({"FieldMayBeFinal", "unused"})
+    @JsonPOJOBuilder(withPrefix = "")
     @JsonIgnoreProperties(ignoreUnknown = true) // for compatibility with old AciServerDetails config files
-    public static class Builder {
+    public static class ServerConfigBuilder {
         private AciServerDetails.TransportProtocol protocol = AciServerDetails.TransportProtocol.HTTP;
         private AciServerDetails.TransportProtocol serviceProtocol = AciServerDetails.TransportProtocol.HTTP;
         private ServerDetails.TransportProtocol indexProtocol = ServerDetails.TransportProtocol.HTTP;
-        private String host;
-        private int port;
-        private int indexPort;
-        private int servicePort;
-        private Set<ProductType> productType;
-        private String indexErrorMessage;
-        private String productTypeRegex;
+        private Pattern productTypeRegex;
 
-        public ServerConfig build() {
-            return new ServerConfig(this);
+        @JsonProperty("productTypeRegex")
+        public String getProductTypeRegexAsString() {
+            return Objects.toString(productTypeRegex);
+        }
+
+        @JsonProperty("productTypeRegex")
+        public ServerConfigBuilder productTypeRegexFromString(final String productTypeRegex) {
+            this.productTypeRegex = Pattern.compile(productTypeRegex);
+            return this;
         }
     }
 
