@@ -323,7 +323,7 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
 
     @Override
     @JsonIgnore
-    public boolean isEnabled() {
+    public Boolean getEnabled() {
         return true;
     }
 

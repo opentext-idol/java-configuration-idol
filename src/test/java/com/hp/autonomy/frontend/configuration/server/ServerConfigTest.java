@@ -41,6 +41,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.when;
@@ -422,7 +423,15 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
 
     @Override
     protected void validateMergedComponent(final ObjectContent<ServerConfig> objectContent) {
+        objectContent.assertThat().hasFieldOrPropertyWithValue("protocol", AciServerDetails.TransportProtocol.HTTP);
+        objectContent.assertThat().hasFieldOrPropertyWithValue("host", "localhost");
+        objectContent.assertThat().hasFieldOrPropertyWithValue("port", 9000);
+        assertThat(objectContent.getObject().getProductType(), hasSize(3));
+    }
 
+    @Override
+    protected void validateString(final String objectAsString) {
+        assertTrue(objectAsString.contains("protocol"));
     }
 
     private GetVersionResponseData mockGetVersionResponse(final String productType) {

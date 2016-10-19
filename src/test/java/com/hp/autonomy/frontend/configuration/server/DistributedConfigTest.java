@@ -33,6 +33,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
@@ -277,5 +278,10 @@ public class DistributedConfigTest extends ConfigurationComponentTest<Distribute
         objectContent.assertThat().hasFieldOrProperty("standard").isNotNull();
         objectContent.assertThat().hasFieldOrProperty("dih").isNotNull();
         objectContent.assertThat().hasFieldOrProperty("dah").isNotNull();
+    }
+
+    @Override
+    protected void validateString(final String objectAsString) {
+        assertTrue(objectAsString.contains("standard"));
     }
 }

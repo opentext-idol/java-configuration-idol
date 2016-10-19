@@ -190,7 +190,7 @@ public class DistributedConfig extends SimpleComponent<DistributedConfig> implem
 
     @Override
     @JsonIgnore
-    public boolean isEnabled() {
+    public Boolean getEnabled() {
         return true;
     }
 

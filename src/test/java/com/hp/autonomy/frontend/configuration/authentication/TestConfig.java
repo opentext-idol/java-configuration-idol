@@ -8,9 +8,11 @@ package com.hp.autonomy.frontend.configuration.authentication;
 import com.hp.autonomy.frontend.configuration.SimpleComponent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.ToString;
 
 @SuppressWarnings("WeakerAccess")
 @Builder
+@ToString
 @AllArgsConstructor
 public class TestConfig extends SimpleComponent<TestConfig> implements AuthenticationConfig<TestConfig> {
     private final Authentication<?> authentication;

@@ -21,6 +21,7 @@ import java.io.IOException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class CommunityAuthenticationTest extends ConfigurationComponentTest<TestConfig> {
     @Override
@@ -91,6 +92,11 @@ public class CommunityAuthenticationTest extends ConfigurationComponentTest<Test
         assertThat(community.getPort(), is(9030));
         assertThat(authentication.getDefaultLogin().getUsername(), is("admin"));
         assertNotNull(authentication.getDefaultLogin().getPassword());
+    }
+
+    @Override
+    protected void validateString(final String objectAsString) {
+        assertTrue(objectAsString.contains("method"));
     }
 
     @JsonSubTypes({

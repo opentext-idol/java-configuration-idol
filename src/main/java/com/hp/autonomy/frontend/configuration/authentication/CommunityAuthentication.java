@@ -86,7 +86,7 @@ public class CommunityAuthentication extends SimpleComponent<CommunityAuthentica
 
     @Override
     @JsonIgnore
-    public boolean isEnabled() {
+    public Boolean getEnabled() {
         return true;
     }
 
