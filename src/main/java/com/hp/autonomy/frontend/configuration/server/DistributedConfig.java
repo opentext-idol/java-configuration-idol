@@ -74,8 +74,9 @@ public class DistributedConfig extends SimpleComponent<DistributedConfig> implem
     /**
      * Fetches the port details for the currently configured config
      *
-     * @param aciService      The {@link AciService} to use to test the ACI and service ports
-     * @param indexingService The {@link IndexingService} to use to test the index port
+     * @param aciService       The {@link AciService} to use to test the ACI and service ports
+     * @param indexingService  The {@link IndexingService} to use to test the index port
+     * @param processorFactory Idol response parser generator
      * @return A DistributedConfig whose index and service ports have been filled in appropriately
      */
     public DistributedConfig fetchServerDetails(final AciService aciService, final IndexingService indexingService, final ProcessorFactory processorFactory) {

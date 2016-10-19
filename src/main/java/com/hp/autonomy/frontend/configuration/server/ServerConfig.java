@@ -103,7 +103,8 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
      * Fetches the index and service ports from the component
      *
      * @param aciService      The {@link AciService} used to discover the ports.
-     * @param indexingService The {@link IndexingService} used to test the index port. This can be null if
+     * @param indexingService The {@link IndexingService} used to test the index port. This can be null if no index port is specified.
+     * @param processorFactory Idol response parser generator
      * @return A new ServerConfig with its indexing and service details filled in.
      */
     public ServerConfig fetchServerDetails(final AciService aciService, final IndexingService indexingService, final ProcessorFactory processorFactory) {
@@ -286,7 +287,6 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
 
     /**
      * @param component The name of the configuration section, to be used in case of failure
-     * @return true if all the required settings exist
      * @throws ConfigException If the ServerConfig is invalid
      */
     @Override
