@@ -1,0 +1,10 @@
+{
+  "protocol": "HTTP",
+  "host": "localhost",
+  "port": 16000,
+  "productType": [
+    "QMS",
+    "DAH",
+    "IDOLPROXY"
+  ]
+}
