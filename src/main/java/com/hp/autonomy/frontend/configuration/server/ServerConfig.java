@@ -22,6 +22,7 @@ import com.hp.autonomy.frontend.configuration.SimpleComponent;
 import com.hp.autonomy.frontend.configuration.validation.OptionalConfigurationComponent;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
 import com.hp.autonomy.types.idol.marshalling.ProcessorFactory;
+import com.hp.autonomy.types.idol.marshalling.processors.NoopProcessor;
 import com.hp.autonomy.types.idol.responses.GetChildrenResponseData;
 import com.hp.autonomy.types.idol.responses.GetStatusResponseData;
 import com.hp.autonomy.types.idol.responses.GetVersionResponseData;
@@ -146,7 +147,7 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
             servicePortDetails.setProtocol(protocol);
             servicePortDetails.setPort(servicePort);
 
-            if (testServicePortConnection(servicePortDetails, aciService, processorFactory)) {
+            if (testServicePortConnection(servicePortDetails, aciService)) {
                 // test http first. If the server is https, it will give an error (quickly),
                 // whereas the timeout when doing https to a http server takes a really long time
                 builder.serviceProtocol(protocol);
@@ -179,9 +180,9 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
         }
     }
 
-    private boolean testServicePortConnection(final AciServerDetails serviceDetails, final AciService aciService, final ProcessorFactory processorFactory) {
+    private boolean testServicePortConnection(final AciServerDetails serviceDetails, final AciService aciService) {
         try {
-            aciService.executeAction(serviceDetails, new AciParameters("getstatus"), processorFactory.getVoidProcessor());
+            aciService.executeAction(serviceDetails, new AciParameters("getstatus"), new NoopProcessor());
             return true;
         } catch (final RuntimeException ignored) {
             return false;
