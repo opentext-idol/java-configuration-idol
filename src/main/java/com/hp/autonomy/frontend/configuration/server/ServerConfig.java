@@ -291,7 +291,7 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
      */
     @Override
     public void basicValidate(final String component) throws ConfigException {
-        if (port <= 0 || port > MAX_PORT) {
+        if (port == null || port <= 0 || port > MAX_PORT) {
             throw new ConfigException(component,
                     component + ": port number must be between 1 and 65535.");
         } else if (StringUtils.isBlank(host)) {
