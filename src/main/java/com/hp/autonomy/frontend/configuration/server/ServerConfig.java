@@ -108,10 +108,15 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
      * @param processorFactory Idol response parser generator
      * @return A new ServerConfig with its indexing and service details filled in.
      */
-    public ServerConfig fetchServerDetails(final AciService aciService, final IndexingService indexingService, final ProcessorFactory processorFactory) {
+    public ServerConfig fetchServerDetails(
+            final AciService aciService,
+            final IndexingService indexingService,
+            final ProcessorFactory processorFactory,
+            final Collection<String> serverProductTypes
+    ) {
         final ServerConfigBuilder builder = toBuilder();
 
-        final Ports ports = determinePorts(aciService, processorFactory);
+        final Ports ports = determinePorts(aciService, processorFactory, serverProductTypes);
 
         if (ports.indexPort != null) {
             final ServerDetails indexDetails = new ServerDetails();
@@ -162,17 +167,25 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
         throw new IllegalArgumentException("Server does not have a valid service port");
     }
 
-    private Ports determinePorts(final AciService aciService, final ProcessorFactory processorFactory) {
+    private Ports determinePorts(
+            final AciService aciService,
+            final ProcessorFactory processorFactory,
+            final Collection<String> serverProductTypes
+    ) {
         try {
             // getStatus doesn't always return ports, but does when an index port is used
-            final boolean useGetStatusToDeterminePorts = indexErrorMessage != null;
+            // some versions of Distributed Connector don't return the service port from GetChildren
+            final boolean useGetStatusToDeterminePorts = indexErrorMessage != null || serverProductTypes.contains(ProductType.DISTRIBUTED_CONNECTOR.name());
+
             if (useGetStatusToDeterminePorts) {
                 final Processor<GetStatusResponseData> processor = processorFactory.getResponseDataProcessor(GetStatusResponseData.class);
                 final GetStatusResponseData getStatusResponseData = aciService.executeAction(toAciServerDetails(), new AciParameters(StatusActions.GetStatus.name()), processor);
+
                 return new Ports(getStatusResponseData.getAciport(), getStatusResponseData.getIndexport(), getStatusResponseData.getServiceport());
             } else {
                 final Processor<GetChildrenResponseData> processor = processorFactory.getResponseDataProcessor(GetChildrenResponseData.class);
                 final GetChildrenResponseData responseData = aciService.executeAction(toAciServerDetails(), new AciParameters(GeneralActions.GetChildren.name()), processor);
+
                 return new Ports(responseData.getPort(), null, responseData.getServiceport());
             }
         } catch (final RuntimeException e) {
@@ -246,17 +259,17 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
             return new ValidationResult<>(false, Validation.REQUIRED_FIELD_MISSING);
         }
 
-        final boolean isCorrectVersion;
+        final Collection<String> serverProductTypes;
 
         try {
-            isCorrectVersion = testServerVersion(aciService, processorFactory);
+            serverProductTypes = getServerProductTypes(aciService, processorFactory);
         } catch (final RuntimeException e) {
             LOGGER.debug("Error validating server version for {}", productType);
             LOGGER.debug("", e);
             return new ValidationResult<>(false, Validation.CONNECTION_ERROR);
         }
 
-        if (!isCorrectVersion) {
+        if (!testServerVersion(serverProductTypes)) {
             if (productTypeRegex == null) {
                 final List<String> friendlyNames = new ArrayList<>();
 
@@ -272,7 +285,7 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
         }
 
         try {
-            final ServerConfig serverConfig = fetchServerDetails(aciService, indexingService, processorFactory);
+            final ServerConfig serverConfig = fetchServerDetails(aciService, indexingService, processorFactory, serverProductTypes);
 
             final boolean result = serverConfig.servicePort > 0;
 
@@ -301,15 +314,17 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
         }
     }
 
-    private boolean testServerVersion(final AciService aciService, final ProcessorFactory processorFactory) {
+    private Collection<String> getServerProductTypes(final AciService aciService, final ProcessorFactory processorFactory) {
         // Community's ProductName is just IDOL, so we need to check the product type
         final GetVersionResponseData versionResponseData = aciService
                 .executeAction(toAciServerDetails(),
                         new AciParameters(GeneralActions.GetVersion.name()),
                         processorFactory.getResponseDataProcessor(GetVersionResponseData.class));
 
-        final Collection<String> serverProductTypes = new HashSet<>(Arrays.asList(versionResponseData.getProducttypecsv().split(",")));
+        return new HashSet<>(Arrays.asList(versionResponseData.getProducttypecsv().split(",")));
+    }
 
+    private boolean testServerVersion(final Collection<String> serverProductTypes) {
         return productTypeRegex == null
                 ? productType.stream().anyMatch(p -> serverProductTypes.contains(p.name()))
                 : serverProductTypes.stream().anyMatch(serverProductType -> productTypeRegex.matcher(serverProductType).matches());
