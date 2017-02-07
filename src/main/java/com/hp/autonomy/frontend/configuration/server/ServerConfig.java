@@ -106,6 +106,7 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
      * @param aciService      The {@link AciService} used to discover the ports.
      * @param indexingService The {@link IndexingService} used to test the index port. This can be null if no index port is specified.
      * @param processorFactory Idol response parser generator
+     * @param serverProductTypes The product types associated with the server
      * @return A new ServerConfig with its indexing and service details filled in.
      */
     public ServerConfig fetchServerDetails(
