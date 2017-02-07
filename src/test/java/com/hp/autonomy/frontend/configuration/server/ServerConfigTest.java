@@ -34,9 +34,11 @@ import org.springframework.boot.test.json.ObjectContent;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.regex.Pattern;
 
 import static com.hp.autonomy.frontend.configuration.server.IsValidMatcher.valid;
 import static com.hp.autonomy.frontend.configuration.server.ServerConfigTest.IsAciParameter.aciParameter;
+import static com.hp.autonomy.frontend.configuration.server.SetContainingItems.isSetWithItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -75,19 +77,19 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 6666)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
                 any()
         )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 6666)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
+                argThat(isSetWithItems(aciParameter("action", "GetChildren"))),
                 any()
         )).thenReturn(mockGetChildrenResponse(6666, 6668));
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 6668)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
                 any()
         )).thenReturn(true);
 
@@ -108,19 +110,19 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7666)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
                 any()
         )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7666)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
                 any()
         )).thenReturn(mockGetStatusResponse(7666, 7667, 7668));
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7668)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
                 any()
         )).thenReturn(true);
 
@@ -148,19 +150,19 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7666)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
                 any()
         )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7666)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
                 any()
         )).thenReturn(mockGetStatusResponse(7666, 7667, 7668));
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7668)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
                 any()
         )).thenReturn(true);
 
@@ -177,7 +179,7 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
                 .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
-        assertThat(validationResult.getData(), is((Object) ServerConfig.Validation.FETCH_PORT_ERROR));
+        assertThat(validationResult.getData(), is(ServerConfig.Validation.FETCH_PORT_ERROR));
         assertThat(serverConfig.validate(aciService, indexingService, processorFactory), is(not(valid())));
     }
 
@@ -188,7 +190,7 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 6666)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
                 any()
         )).thenReturn(getVersionResponseData);
 
@@ -201,7 +203,7 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
                 .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
-        assertThat(validationResult.getData(), is((Object) new ServerConfig.IncorrectServerType(Collections.singletonList("Content"))));
+        assertThat(validationResult.getData(), is(new ServerConfig.IncorrectServerType(Collections.singletonList("Content"))));
         assertThat(serverConfig.validate(aciService, null, processorFactory), is(not(valid())));
     }
 
@@ -213,13 +215,13 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 6666)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
                 any()
         )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 6666)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
+                argThat(isSetWithItems(aciParameter("action", "GetChildren"))),
                 any()
         )).thenReturn(mockGetChildrenResponse(6666, null));
 
@@ -231,7 +233,7 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
                 .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
-        assertThat(validationResult.getData(), is((Object) ServerConfig.Validation.SERVICE_PORT_ERROR));
+        assertThat(validationResult.getData(), is(ServerConfig.Validation.SERVICE_PORT_ERROR));
         assertThat(serverConfig.validate(aciService, null, processorFactory), is(not(valid())));
     }
 
@@ -243,13 +245,13 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7666)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
                 any()
         )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7666)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
                 any()
         )).thenReturn(mockGetChildrenResponse(7666, 7668));
 
@@ -262,7 +264,7 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
                 .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
-        assertThat(validationResult.getData(), is((Object) ServerConfig.Validation.FETCH_PORT_ERROR));
+        assertThat(validationResult.getData(), is(ServerConfig.Validation.FETCH_PORT_ERROR));
         assertThat(serverConfig.validate(aciService, null, processorFactory), is(not(valid())));
     }
 
@@ -275,7 +277,7 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
                 .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
-        assertThat(validationResult.getData(), is((Object) ServerConfig.Validation.REQUIRED_FIELD_MISSING));
+        assertThat(validationResult.getData(), is(ServerConfig.Validation.REQUIRED_FIELD_MISSING));
         assertThat(serverConfig.validate(aciService, null, processorFactory), is(not(valid())));
     }
 
@@ -288,7 +290,7 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
                 .build();
 
         final ValidationResult<?> validationResult = serverConfig.validate(aciService, indexingService, processorFactory);
-        assertThat(validationResult.getData(), is((Object) ServerConfig.Validation.REQUIRED_FIELD_MISSING));
+        assertThat(validationResult.getData(), is(ServerConfig.Validation.REQUIRED_FIELD_MISSING));
         assertThat(serverConfig.validate(aciService, null, processorFactory), is(not(valid())));
     }
 
@@ -299,19 +301,19 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7666)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
                 any()
         )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7666)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
+                argThat(isSetWithItems(aciParameter("action", "GetChildren"))),
                 any()
         )).thenReturn(mockGetChildrenResponse(7666, 7668));
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7668)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
                 any()
         )).thenReturn(true);
 
@@ -330,19 +332,19 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7008)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
                 any()
         )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7008)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
+                argThat(isSetWithItems(aciParameter("action", "GetChildren"))),
                 any()
         )).thenReturn(mockGetChildrenResponse(7008, 7010));
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7010)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
                 any()
         )).thenReturn(true);
 
@@ -361,19 +363,19 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7008)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetVersion"))),
+                argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
                 any()
         )).thenReturn(getVersionResponseData);
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7008)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetChildren"))),
+                argThat(isSetWithItems(aciParameter("action", "GetChildren"))),
                 any()
         )).thenReturn(mockGetChildrenResponse(7008, 7010));
 
         when(aciService.executeAction(
                 argThat(new IsAciServerDetails("example.com", 7010)),
-                argThat(SetContainingItems.isSetWithItems(aciParameter("action", "GetStatus"))),
+                argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
                 any()
         )).thenReturn(true);
 
@@ -387,6 +389,39 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
 
         assertThat(validationResult, is(not(valid())));
         assertThat(validationResult.getData(), CoreMatchers.is(ServerConfig.Validation.REGULAR_EXPRESSION_MATCH_ERROR));
+    }
+
+    @Test
+    public void testDistributedConnectorCallsGetStatus() {
+        final GetVersionResponseData getVersionResponseData = mockGetVersionResponse("DISTRIBUTED_CONNECTOR");
+
+        when(aciService.executeAction(
+                argThat(new IsAciServerDetails("example.com", 10000)),
+                argThat(isSetWithItems(aciParameter("action", "GetVersion"))),
+                any()
+        )).thenReturn(getVersionResponseData);
+
+        when(aciService.executeAction(
+                argThat(new IsAciServerDetails("example.com", 10000)),
+                argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
+                any()
+        )).thenReturn(mockGetStatusResponse(10000, null, 10002));
+
+        when(aciService.executeAction(
+                argThat(new IsAciServerDetails("example.com", 10002)),
+                argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
+                any()
+        )).thenReturn(true);
+
+        final ServerConfig serverConfig = ServerConfig.builder()
+                .host("example.com")
+                .port(10000)
+                .productTypeRegex(Pattern.compile(".*?CONNECTOR"))
+                .build();
+
+        final ValidationResult<?> validationResult = serverConfig.validate(aciService, null, processorFactory);
+
+        assertThat(validationResult, is(valid()));
     }
 
     @Override
@@ -449,7 +484,7 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
         return getChildrenResponseData;
     }
 
-    private GetStatusResponseData mockGetStatusResponse(final int port, final int indexPort, final int servicePort) {
+    private GetStatusResponseData mockGetStatusResponse(final int port, final Integer indexPort, final int servicePort) {
         final GetStatusResponseData getStatusResponseData = new GetStatusResponseData();
         getStatusResponseData.setAciport(port);
         getStatusResponseData.setIndexport(indexPort);

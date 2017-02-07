@@ -30,6 +30,8 @@ import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+
 /**
  * {@link ConfigurationComponent} for representing an IDOL component which:
  * <ol>
@@ -83,10 +85,10 @@ public class DistributedConfig extends SimpleComponent<DistributedConfig> implem
         final DistributedConfigBuilder builder = toBuilder();
 
         if (distributed) {
-            builder.dih(dih.fetchServerDetails(aciService, indexingService, processorFactory));
-            builder.dah(dah.fetchServerDetails(aciService, indexingService, processorFactory));
+            builder.dih(dih.fetchServerDetails(aciService, indexingService, processorFactory, Collections.singleton(ProductType.DIH.name())));
+            builder.dah(dah.fetchServerDetails(aciService, indexingService, processorFactory, Collections.singleton(ProductType.DAH.name())));
         } else {
-            builder.standard(standard.fetchServerDetails(aciService, indexingService, processorFactory));
+            builder.standard(standard.fetchServerDetails(aciService, indexingService, processorFactory, Collections.singleton(ProductType.AXE.name())));
         }
 
         return builder.build();

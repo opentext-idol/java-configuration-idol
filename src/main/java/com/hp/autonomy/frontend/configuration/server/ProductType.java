@@ -42,6 +42,11 @@ public enum ProductType {
     DIH("DIH"),
 
     /**
+     * Represents Distributed Connector
+     */
+    DISTRIBUTED_CONNECTOR("Distributed Connector"),
+
+    /**
      * Represents IDOL Server
      */
     IDOLPROXY("IDOL Proxy"),
