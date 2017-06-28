@@ -7,8 +7,8 @@ package com.hp.autonomy.frontend.configuration.aci;
 
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.services.Processor;
-import com.autonomy.aci.client.transport.AciParameter;
 import com.autonomy.aci.client.transport.AciServerDetails;
+import com.autonomy.aci.client.transport.ActionParameter;
 
 import java.util.Set;
 
@@ -24,7 +24,7 @@ public abstract class AbstractConfigurableAciService implements ConfigurableAciS
     }
 
     @Override
-    public <T> T executeAction(final Set<? extends AciParameter> parameters, final Processor<T> processor) {
+    public <T> T executeAction(final Set<? extends ActionParameter<?>> parameters, final Processor<T> processor) {
         return executeAction(getServerDetails(), parameters, processor);
     }
 
@@ -33,7 +33,7 @@ public abstract class AbstractConfigurableAciService implements ConfigurableAciS
      * {@inheritDoc}
      */
     @Override
-    public <T> T executeAction(final AciServerDetails serverDetails, final Set<? extends AciParameter> parameters, final Processor<T> processor) {
+    public <T> T executeAction(final AciServerDetails serverDetails, final Set<? extends ActionParameter<?>> parameters, final Processor<T> processor) {
         return aciService.executeAction(serverDetails, parameters, processor);
     }
 
