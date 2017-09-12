@@ -7,6 +7,7 @@ package com.hp.autonomy.frontend.configuration;
 import com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory;
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.transport.AciServerDetails;
+import com.autonomy.aci.client.transport.EncryptionCodec;
 import com.autonomy.aci.client.util.AciParameters;
 import com.autonomy.nonaci.ServerDetails;
 import com.autonomy.nonaci.indexing.IndexingException;
@@ -59,6 +60,11 @@ public class ServerConfig implements ConfigurationComponent {
      */
     private final Pattern productTypeRegex;
 
+    /**
+     * @return An EncryptionCodec used for encryption. This is not serialized.
+     */
+    private final EncryptionCodec encryptionCodec;
+
     private ServerConfig(final Builder builder) {
         this.protocol = builder.getProtocol();
         this.host = builder.getHost();
@@ -69,6 +75,7 @@ public class ServerConfig implements ConfigurationComponent {
         this.serviceProtocol = builder.getServiceProtocol();
         this.productType = builder.getProductType();
         this.indexErrorMessage = builder.getIndexErrorMessage();
+        this.encryptionCodec = builder.getEncryptionCodec();
 
         if(builder.productTypeRegex == null) {
             this.productTypeRegex = null;
@@ -96,6 +103,7 @@ public class ServerConfig implements ConfigurationComponent {
             builder.setServiceProtocol(this.serviceProtocol == null ? serverConfig.serviceProtocol : this.serviceProtocol);
             builder.setProductType(this.productType == null ? serverConfig.productType : this.productType);
             builder.setIndexErrorMessage(this.indexErrorMessage == null ? serverConfig.indexErrorMessage : this.indexErrorMessage);
+            builder.setEncryptionCodec(this.encryptionCodec == null ? serverConfig.encryptionCodec : this.encryptionCodec);
 
             // we use Pattern here, but Builder takes String
             builder.setProductTypeRegex(Objects.toString(this.productTypeRegex == null ? serverConfig.productTypeRegex : this.productTypeRegex, null));
@@ -228,7 +236,11 @@ public class ServerConfig implements ConfigurationComponent {
      * @return A representation of this server as an {@link AciServerDetails}
      */
     public AciServerDetails toAciServerDetails() {
-        return new AciServerDetails(getProtocol(), getHost(), getPort());
+        final AciServerDetails details = new AciServerDetails(getProtocol(), getHost(), getPort());
+        if (this.encryptionCodec != null) {
+            details.setEncryptionCodec(this.encryptionCodec);
+        }
+        return details;
     }
 
     /**
@@ -394,7 +406,7 @@ public class ServerConfig implements ConfigurationComponent {
     @Data
     @Accessors(chain = true)
     @JsonPOJOBuilder(withPrefix = "set")
-    @JsonIgnoreProperties(ignoreUnknown = true) // for compatibility with old AciServerDetails config files
+    @JsonIgnoreProperties(value = "encryptionCodec", ignoreUnknown = true) // for compatibility with old AciServerDetails config files
     public static class Builder {
         private AciServerDetails.TransportProtocol protocol = AciServerDetails.TransportProtocol.HTTP;
         private AciServerDetails.TransportProtocol serviceProtocol = AciServerDetails.TransportProtocol.HTTP;
@@ -406,6 +418,7 @@ public class ServerConfig implements ConfigurationComponent {
         private Set<ProductType> productType;
         private String indexErrorMessage;
         private String productTypeRegex;
+        private EncryptionCodec encryptionCodec;
 
         public ServerConfig build() {
             return new ServerConfig(this);
