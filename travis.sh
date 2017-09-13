@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ ${TRAVIS_BRANCH} == 'master' || ${TRAVIS_BRANCH} == 'develop' ]]
+if [[ ${TRAVIS_BRANCH} == 'master' || ${TRAVIS_BRANCH} == 'develop'  || ${TRAVIS_BRANCH} == 'release/3.4.0' ]]
 then
   echo "Deploying Jar to Maven Central"
   mvn deploy -DskipTests --settings settings.xml -Prelease
