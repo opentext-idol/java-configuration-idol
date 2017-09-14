@@ -10,7 +10,7 @@ import com.autonomy.aci.client.annotations.IdolField;
 
 /**
  * Class representing an IDOL security type.
- * <p/>
+ * <p></p>
  * This class is annotated for use with {@link com.autonomy.aci.client.annotations.IdolAnnotationsProcessorFactory}
  */
 @IdolDocument("securitytype")

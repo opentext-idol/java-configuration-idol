@@ -10,9 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Reference implementation of {@link ConfigFileService}, which outputs configuration objects as JSON files.
  * An additional type bound is placed on the configuration object this class uses.
- * <p/>
+ * <p></p>
  * This class requires that a default config file be available at runtime.
- * <p/>
+ * <p></p>
  * Operations on the Config are thread safe.
  * @param <T> The type of the Configuration object. If it extends {@link PasswordsConfig}, passwords will be encrypted
  * and decrypted when the file is written and read respectively.  If it extends {@link LoginConfig}, a default

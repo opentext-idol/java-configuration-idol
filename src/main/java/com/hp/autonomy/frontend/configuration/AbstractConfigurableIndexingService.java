@@ -27,7 +27,6 @@ public abstract class AbstractConfigurableIndexingService implements Configurabl
 
     /**
      * Uses the given {@link ServerDetails} instead of those returned by {@link #getServerDetails()}
-     * @inheritDoc
      */
     @Override
     public int executeCommand(final ServerDetails serverDetails, final IndexCommand command) throws IndexingException {
