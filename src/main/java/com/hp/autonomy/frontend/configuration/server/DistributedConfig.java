@@ -152,15 +152,14 @@ public class DistributedConfig extends SimpleComponent<DistributedConfig> implem
                     distributedValidationResultDetails.setDihValidationResult(dihValidation);
                 }
 
-                // TODO: it shouldn't be mandatory to run a LanguageSettings check as not all products require it
                 if (dahValidation.isValid()) {
                     try {
                         aciService.executeAction(dah.toAciServerDetails(),
                                 new AciParameters(GeneralActions.LanguageSettings.name()),
                                 processorFactory.getVoidProcessor());
                     } catch (final AciErrorException ignored) {
-                        dahValid = false;
-                        distributedValidationResultDetails.setDahValidationResult(new ValidationResult<>(false, Validation.LANGUAGE_SETTINGS));
+                        LOGGER.warn("Failed to run DAH action=LanguageSettings; will fallback to using first language from action=GetStatus as default language.");
+                        distributedValidationResultDetails.setDahValidationResult(dahValidation);
                     }
                 } else {
                     distributedValidationResultDetails.setDahValidationResult(dahValidation);
