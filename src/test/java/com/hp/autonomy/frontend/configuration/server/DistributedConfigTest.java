@@ -198,7 +198,7 @@ public class DistributedConfigTest extends ConfigurationComponentTest<Distribute
     }
 
     @Test
-    public void testValidateWithDistributedTrueAndLanguageErrorExceptionThrown() {
+    public void testValidateWithDistributedTrueAndLanguageErrorStillValid() {
         final ValidationResult<?> validationResultOne = new ValidationResult<>(true, "ValidationResultOne");
         final ValidationResult<?> validationResultTwo = new ValidationResult<>(true, "ValidationResultTwo");
         final ServerConfig dih = mock(ServerConfig.class);
@@ -226,11 +226,11 @@ public class DistributedConfigTest extends ConfigurationComponentTest<Distribute
         verify(dah).validate(aciService, indexingService, processorFactory);
         verify(dih).validate(aciService, indexingService, processorFactory);
 
-        assertThat(distributedValidationResult, is(not(valid())));
+        assertThat(distributedValidationResult, is(valid()));
 
         final DistributedConfig.DistributedValidationResultDetails validationDetails = (DistributedConfig.DistributedValidationResultDetails) distributedValidationResult.getData();
 
-        assertThat(validationDetails.getDahValidationResult(), is(not(valid())));
+        assertThat(validationDetails.getDahValidationResult(), is(valid()));
         assertThat(validationDetails.getDihValidationResult(), is(nullValue()));
     }
 
