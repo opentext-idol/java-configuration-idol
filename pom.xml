@@ -16,11 +16,11 @@
 
     <name>Micro Focus Java Configuration IDOL</name>
     <description>IDOL implementation of the Micro Focus IDOL Configuration API</description>
-    <url>https://github.com/hpe-idol/java-configuration-idol</url>
+    <url>https://github.com/microfocus-idol/java-configuration-idol</url>
 
     <organization>
-        <name>Hewlett-Packard Development Company, L.P.</name>
-        <url>http://www.hp.com/</url>
+        <name>Micro Focus</name>
+        <url>http://www.microfocus.com</url>
     </organization>
 
     <inceptionYear>2013</inceptionYear>

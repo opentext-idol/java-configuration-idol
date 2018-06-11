@@ -1,6 +1,6 @@
 # Micro Focus Configuration API - IDOL Implementation
 
-[![Build Status](https://travis-ci.org/hpe-idol/java-configuration-idol.svg?branch=master)](https://travis-ci.org/hpe-idol/java-configuration-idol)
+[![Build Status](https://travis-ci.org/microfocus-idol/java-configuration-idol.svg?branch=master)](https://travis-ci.org/microfocus-idol/java-configuration-idol)
 
 IDOL implementation of the Micro Focus Configuration API. Contains code for configuring IDOL components and authenticating using Community.
 
