@@ -7,6 +7,7 @@ package com.hp.autonomy.frontend.configuration.server;
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.services.Processor;
 import com.autonomy.aci.client.transport.AciServerDetails;
+import com.autonomy.aci.client.transport.EncryptionCodec;
 import com.autonomy.aci.client.util.AciParameters;
 import com.autonomy.nonaci.ServerDetails;
 import com.autonomy.nonaci.indexing.IndexingException;
@@ -86,6 +87,11 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
      * @return A Pattern used to match the product type. Useful for connectors.
      */
     private final Pattern productTypeRegex;
+
+    /**
+     * @return An EncryptionCodec used for encryption. This is not serialized.
+     */
+    private final EncryptionCodec encryptionCodec;
 
     /**
      * Creates a new ServerConfig with the given ServerDetails for indexing
@@ -220,7 +226,11 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
      * @return A representation of this server as an {@link AciServerDetails}
      */
     public AciServerDetails toAciServerDetails() {
-        return new AciServerDetails(protocol, host, port);
+        final AciServerDetails details = new AciServerDetails(protocol, host, port);
+        if (this.encryptionCodec != null) {
+            details.setEncryptionCodec(this.encryptionCodec);
+        }
+        return details;
     }
 
     /**
@@ -363,12 +373,13 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
 
     @SuppressWarnings({"FieldMayBeFinal", "unused"})
     @JsonPOJOBuilder(withPrefix = "")
-    @JsonIgnoreProperties(ignoreUnknown = true) // for compatibility with old AciServerDetails config files
+    @JsonIgnoreProperties(value = "encryptionCodec", ignoreUnknown = true) // for compatibility with old AciServerDetails config files
     public static class ServerConfigBuilder {
         private AciServerDetails.TransportProtocol protocol = AciServerDetails.TransportProtocol.HTTP;
         private AciServerDetails.TransportProtocol serviceProtocol = AciServerDetails.TransportProtocol.HTTP;
         private ServerDetails.TransportProtocol indexProtocol = ServerDetails.TransportProtocol.HTTP;
         private Pattern productTypeRegex;
+        private EncryptionCodec encryptionCodec;
 
         @JsonProperty("productTypeRegex")
         public String getProductTypeRegexAsString() {
