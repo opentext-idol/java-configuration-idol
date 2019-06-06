@@ -388,7 +388,8 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
 
         @JsonProperty("productTypeRegex")
         public ServerConfigBuilder productTypeRegexFromString(final String productTypeRegex) {
-            this.productTypeRegex = Pattern.compile(productTypeRegex);
+            this.productTypeRegex = productTypeRegex == null ? null :
+                Pattern.compile(productTypeRegex);
             return this;
         }
     }
