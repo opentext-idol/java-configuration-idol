@@ -77,7 +77,7 @@
         <dependency>
             <groupId>com.hp.autonomy.frontend</groupId>
             <artifactId>idol-types</artifactId>
-            <version>1.19.1</version>
+            <version>1.19.2</version>
         </dependency>
         <dependency>
             <groupId>com.hp.autonomy.idol</groupId>
@@ -87,7 +87,7 @@
         <dependency>
             <groupId>com.hp.autonomy.frontend.configuration</groupId>
             <artifactId>configuration-impl</artifactId>
-            <version>2.1.5</version>
+            <version>2.1.6</version>
         </dependency>
 
         <dependency>
@@ -98,7 +98,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.9.9.1</version>
+            <version>2.9.9.2</version>
         </dependency>
 
         <dependency>
@@ -111,7 +111,7 @@
         <dependency>
             <groupId>com.hp.autonomy.frontend.configuration</groupId>
             <artifactId>configuration-impl</artifactId>
-            <version>2.1.5</version>
+            <version>2.1.6</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
