@@ -91,6 +91,7 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
     /**
      * @return An EncryptionCodec used for encryption. This is not serialized.
      */
+    @JsonIgnore
     private final EncryptionCodec encryptionCodec;
 
     /**
