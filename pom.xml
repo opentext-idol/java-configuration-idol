@@ -12,7 +12,7 @@
 
     <groupId>com.hp.autonomy.frontend.configuration</groupId>
     <artifactId>configuration-idol</artifactId>
-    <version>5.9.0-SNAPSHOT</version>
+    <version>5.9.0</version>
 
     <name>Micro Focus Java Configuration IDOL</name>
     <description>IDOL implementation of the Micro Focus IDOL Configuration API</description>
@@ -77,7 +77,7 @@
         <dependency>
             <groupId>com.hp.autonomy.frontend</groupId>
             <artifactId>idol-types</artifactId>
-            <version>1.21.0-SNAPSHOT</version>
+            <version>1.21.0</version>
         </dependency>
         <dependency>
             <groupId>com.hp.autonomy.idol</groupId>
@@ -87,7 +87,7 @@
         <dependency>
             <groupId>com.hp.autonomy.frontend.configuration</groupId>
             <artifactId>configuration-impl</artifactId>
-            <version>2.2.0-SNAPSHOT</version>
+            <version>2.1.9</version>
         </dependency>
 
         <dependency>
@@ -111,7 +111,7 @@
         <dependency>
             <groupId>com.hp.autonomy.frontend.configuration</groupId>
             <artifactId>configuration-impl</artifactId>
-            <version>2.1.8</version>
+            <version>2.1.9</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
