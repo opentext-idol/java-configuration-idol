@@ -14,13 +14,13 @@
     <artifactId>configuration-idol</artifactId>
     <version>5.12.0-SNAPSHOT</version>
 
-    <name>Micro Focus Java Configuration IDOL</name>
-    <description>IDOL implementation of the Micro Focus IDOL Configuration API</description>
+    <name>OpenText Java Configuration IDOL</name>
+    <description>IDOL implementation of the OpenText IDOL Configuration API</description>
     <url>https://github.com/microfocus-idol/java-configuration-idol</url>
 
     <organization>
-        <name>Micro Focus</name>
-        <url>http://www.microfocus.com</url>
+        <name>OpenText</name>
+        <url>https://www.opentext.com/</url>
     </organization>
 
     <inceptionYear>2013</inceptionYear>
@@ -35,9 +35,6 @@
     <developers>
         <developer>
             <name>Tung Jin Chew</name>
-            <email>tung-jin.chew@microfocus.com</email>
-            <organization>Micro Focus</organization>
-            <organizationUrl>https://www.microfocus.com</organizationUrl>
         </developer>
         <developer>
             <name>Alex Scown</name>
