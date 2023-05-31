@@ -16,7 +16,7 @@
 
     <name>OpenText Java Configuration IDOL</name>
     <description>IDOL implementation of the OpenText IDOL Configuration API</description>
-    <url>https://github.com/microfocus-idol/java-configuration-idol</url>
+    <url>https://github.com/opentext-idol/java-configuration-idol</url>
 
     <organization>
         <name>OpenText</name>
@@ -60,14 +60,14 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:microfocus-idol/java-configuration-idol.git</connection>
-        <developerConnection>scm:git:git@github.com:microfocus-idol/java-configuration-idol.git</developerConnection>
-        <url>git@github.com:microfocus-idol/java-configuration-idol.git</url>
+        <connection>scm:git:git@github.com:opentext-idol/java-configuration-idol.git</connection>
+        <developerConnection>scm:git:git@github.com:opentext-idol/java-configuration-idol.git</developerConnection>
+        <url>git@github.com:opentext-idol/java-configuration-idol.git</url>
     </scm>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/microfocus-idol/java-configuration-idol/issues</url>
+        <url>https://github.com/opentext-idol/java-configuration-idol/issues</url>
     </issueManagement>
 
     <dependencies>
