@@ -17,9 +17,9 @@ package com.hp.autonomy.frontend.configuration.aci;
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.transport.AciServerDetails;
 import com.autonomy.aci.client.util.AciParameters;
-import com.hp.autonomy.types.idol.marshalling.ProcessorFactory;
-import com.hp.autonomy.types.idol.responses.CommunityStatusResponseData;
-import com.hp.autonomy.types.idol.responses.SecurityType;
+import com.opentext.idol.types.marshalling.ProcessorFactory;
+import com.opentext.idol.types.responses.CommunityStatusResponseData;
+import com.opentext.idol.types.responses.SecurityType;
 import com.hp.autonomy.types.requests.idol.actions.status.StatusActions;
 
 import java.util.List;

@@ -15,7 +15,7 @@
 package com.hp.autonomy.frontend.configuration.aci;
 
 import com.autonomy.aci.client.transport.AciServerDetails;
-import com.hp.autonomy.types.idol.responses.SecurityType;
+import com.opentext.idol.types.responses.SecurityType;
 
 import java.util.List;
 

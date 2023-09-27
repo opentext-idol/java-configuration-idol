@@ -17,7 +17,7 @@ package com.hp.autonomy.frontend.configuration.server;
 import com.autonomy.aci.client.transport.AciServerDetails;
 import org.mockito.ArgumentMatcher;
 
-class IsAciServerDetails extends ArgumentMatcher<AciServerDetails> {
+class IsAciServerDetails implements ArgumentMatcher<AciServerDetails> {
     private final String host;
     private final int port;
 
@@ -27,12 +27,10 @@ class IsAciServerDetails extends ArgumentMatcher<AciServerDetails> {
     }
 
     @Override
-    public boolean matches(final Object o) {
-        if (!(o instanceof AciServerDetails)) {
+    public boolean matches(final AciServerDetails serverDetails) {
+        if (serverDetails == null) {
             return false;
         }
-
-        final AciServerDetails serverDetails = (AciServerDetails) o;
 
         boolean result = true;
 

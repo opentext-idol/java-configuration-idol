@@ -24,10 +24,10 @@ import com.autonomy.nonaci.indexing.IndexingException;
 import com.autonomy.nonaci.indexing.IndexingService;
 import com.hp.autonomy.frontend.configuration.ConfigurationComponentTest;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
-import com.hp.autonomy.types.idol.marshalling.ProcessorFactory;
-import com.hp.autonomy.types.idol.responses.GetChildrenResponseData;
-import com.hp.autonomy.types.idol.responses.GetStatusResponseData;
-import com.hp.autonomy.types.idol.responses.GetVersionResponseData;
+import com.opentext.idol.types.marshalling.ProcessorFactory;
+import com.opentext.idol.types.responses.GetChildrenResponseData;
+import com.opentext.idol.types.responses.GetStatusResponseData;
+import com.opentext.idol.types.responses.GetVersionResponseData;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
@@ -36,7 +36,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.test.json.JsonContent;
 import org.springframework.boot.test.json.ObjectContent;
 
@@ -53,8 +54,8 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 
 @Slf4j
@@ -74,7 +75,7 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
     @Override
     public void setUp() {
         super.setUp();
-        when(processorFactory.getVoidProcessor()).thenReturn(voidProcessor);
+        Mockito.lenient().when(processorFactory.getVoidProcessor()).thenReturn(voidProcessor);
         when(processorFactory.getResponseDataProcessor(GetVersionResponseData.class)).thenReturn(getVersionProcessor);
     }
 
@@ -168,12 +169,6 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
                 argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
                 any()
         )).thenReturn(mockGetStatusResponse(7666, 7667, 7668));
-
-        when(aciService.executeAction(
-                argThat(new IsAciServerDetails("example.com", 7668)),
-                argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
-                any()
-        )).thenReturn(true);
 
         when(indexingService.executeCommand(
                 argThat(new IsServerDetails("example.com", 7667)),
@@ -376,18 +371,6 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
                 any()
         )).thenReturn(getVersionResponseData);
 
-        when(aciService.executeAction(
-                argThat(new IsAciServerDetails("example.com", 7008)),
-                argThat(isSetWithItems(aciParameter("action", "GetChildren"))),
-                any()
-        )).thenReturn(mockGetChildrenResponse(7008, 7010));
-
-        when(aciService.executeAction(
-                argThat(new IsAciServerDetails("example.com", 7010)),
-                argThat(isSetWithItems(aciParameter("action", "GetStatus"))),
-                any()
-        )).thenReturn(true);
-
         final ServerConfig serverConfig = ServerConfig.builder()
                 .host("example.com")
                 .port(7008)
@@ -501,7 +484,7 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
         return getStatusResponseData;
     }
 
-    static class IsAciParameter extends ArgumentMatcher<AciParameter> {
+    static class IsAciParameter implements ArgumentMatcher<AciParameter> {
 
         private final String name;
         private final String value;
@@ -517,20 +500,14 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
         }
 
         @Override
-        public boolean matches(final Object argument) {
-            if (!(argument instanceof AciParameter)) {
-                return false;
-            }
-
-            final AciParameter parameter = (AciParameter) argument;
-
+        public boolean matches(final AciParameter parameter) {
             return name.equalsIgnoreCase(parameter.getName())
                     && value.equalsIgnoreCase(parameter.getValue());
         }
     }
 
     // duplicate all this due to deficiencies of the Autonomy APIs
-    private static class IsServerDetails extends ArgumentMatcher<ServerDetails> {
+    private static class IsServerDetails implements ArgumentMatcher<ServerDetails> {
 
         private final String host;
         private final int port;
@@ -541,13 +518,7 @@ public class ServerConfigTest extends ConfigurationComponentTest<ServerConfig> {
         }
 
         @Override
-        public boolean matches(final Object o) {
-            if (!(o instanceof ServerDetails)) {
-                return false;
-            }
-
-            final ServerDetails serverDetails = (ServerDetails) o;
-
+        public boolean matches(final ServerDetails serverDetails) {
             boolean result = true;
 
             if (host != null) {

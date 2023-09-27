@@ -14,9 +14,12 @@
 
 package com.hp.autonomy.frontend.configuration.server;
 
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.mockito.ArgumentMatcher;
+import org.mockito.internal.hamcrest.HamcrestArgumentMatcher;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,25 +27,25 @@ import java.util.Set;
 
 import static org.hamcrest.core.AllOf.allOf;
 
-class SetContainingItems<T> extends ArgumentMatcher<Set<? super T>> {
+class SetContainingItems<T> extends BaseMatcher<Set<? super T>> {
 
-    private final Matcher<? super T> matcher;
+    private final ArgumentMatcher<? super T> matcher;
 
-    private SetContainingItems(final Matcher<? super T> matcher) {
+    private SetContainingItems(final ArgumentMatcher<? super T> matcher) {
         this.matcher = matcher;
     }
 
     @SafeVarargs
     @Factory
-    static <T> Matcher<Set<T>> isSetWithItems(final Matcher<T>... matchers) {
+    static <T> ArgumentMatcher<Set<T>> isSetWithItems(final ArgumentMatcher<T>... matchers) {
         final Collection<Matcher<? super Set<T>>> all = new ArrayList<>(matchers.length);
 
-        for (final Matcher<T> elementMatcher : matchers) {
+        for (final ArgumentMatcher<T> elementMatcher : matchers) {
             // Doesn't forward to hasItem() method so compiler can sort out generics.
             all.add(new SetContainingItems<>(elementMatcher));
         }
 
-        return allOf(all);
+        return new HamcrestArgumentMatcher<>(allOf(all));
     }
 
     @Override
@@ -53,11 +56,18 @@ class SetContainingItems<T> extends ArgumentMatcher<Set<? super T>> {
 
         final Iterable<?> itemAsSet = (Iterable<?>) item;
         for (final Object setItem : itemAsSet) {
-            if (matcher.matches(setItem)) {
+            if (matcher.matches((T) setItem)) {
                 return true;
             }
         }
 
         return false;
     }
+
+    @Override
+    public void describeTo(Description description) {
+        description.appendText("match in set: ");
+        description.appendValue(matcher);
+    }
+
 }
