@@ -17,7 +17,7 @@ package com.hp.autonomy.frontend.configuration.server;
 import com.autonomy.aci.client.services.AciErrorException;
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.transport.AciServerDetails;
-import com.autonomy.aci.client.util.AciParameters;
+import com.autonomy.aci.client.util.ActionParameters;
 import com.autonomy.nonaci.ServerDetails;
 import com.autonomy.nonaci.indexing.IndexingService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -29,13 +29,9 @@ import com.hp.autonomy.frontend.configuration.ConfigurationComponent;
 import com.hp.autonomy.frontend.configuration.SimpleComponent;
 import com.hp.autonomy.frontend.configuration.validation.OptionalConfigurationComponent;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
-import com.opentext.idol.types.marshalling.ProcessorFactory;
 import com.hp.autonomy.types.requests.idol.actions.general.GeneralActions;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import com.opentext.idol.types.marshalling.ProcessorFactory;
+import lombok.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,7 +160,7 @@ public class DistributedConfig extends SimpleComponent<DistributedConfig> implem
                 if (dahValidation.isValid()) {
                     try {
                         aciService.executeAction(dah.toAciServerDetails(),
-                                new AciParameters(GeneralActions.LanguageSettings.name()),
+                                new ActionParameters(GeneralActions.LanguageSettings.name()),
                                 processorFactory.getVoidProcessor());
                     } catch (final AciErrorException ignored) {
                         LOGGER.warn("Failed to run DAH action=LanguageSettings; will fallback to using first language from action=GetStatus as default language.");

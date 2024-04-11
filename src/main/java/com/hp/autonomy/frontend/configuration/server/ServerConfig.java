@@ -17,7 +17,7 @@ import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.services.Processor;
 import com.autonomy.aci.client.transport.AciServerDetails;
 import com.autonomy.aci.client.transport.EncryptionCodec;
-import com.autonomy.aci.client.util.AciParameters;
+import com.autonomy.aci.client.util.ActionParameters;
 import com.autonomy.nonaci.ServerDetails;
 import com.autonomy.nonaci.indexing.IndexingException;
 import com.autonomy.nonaci.indexing.IndexingService;
@@ -31,31 +31,19 @@ import com.hp.autonomy.frontend.configuration.ConfigException;
 import com.hp.autonomy.frontend.configuration.SimpleComponent;
 import com.hp.autonomy.frontend.configuration.validation.OptionalConfigurationComponent;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
+import com.hp.autonomy.types.requests.idol.actions.general.GeneralActions;
+import com.hp.autonomy.types.requests.idol.actions.status.StatusActions;
 import com.opentext.idol.types.marshalling.ProcessorFactory;
 import com.opentext.idol.types.marshalling.processors.NoopProcessor;
 import com.opentext.idol.types.responses.GetChildrenResponseData;
 import com.opentext.idol.types.responses.GetStatusResponseData;
 import com.opentext.idol.types.responses.GetVersionResponseData;
-import com.hp.autonomy.types.requests.idol.actions.general.GeneralActions;
-import com.hp.autonomy.types.requests.idol.actions.status.StatusActions;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -196,12 +184,12 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
 
             if (useGetStatusToDeterminePorts) {
                 final Processor<GetStatusResponseData> processor = processorFactory.getResponseDataProcessor(GetStatusResponseData.class);
-                final GetStatusResponseData getStatusResponseData = aciService.executeAction(toAciServerDetails(), new AciParameters(StatusActions.GetStatus.name()), processor);
+                final GetStatusResponseData getStatusResponseData = aciService.executeAction(toAciServerDetails(), new ActionParameters(StatusActions.GetStatus.name()), processor);
 
                 return new Ports(getStatusResponseData.getAciport(), getStatusResponseData.getIndexport(), getStatusResponseData.getServiceport());
             } else {
                 final Processor<GetChildrenResponseData> processor = processorFactory.getResponseDataProcessor(GetChildrenResponseData.class);
-                final GetChildrenResponseData responseData = aciService.executeAction(toAciServerDetails(), new AciParameters(GeneralActions.GetChildren.name()), processor);
+                final GetChildrenResponseData responseData = aciService.executeAction(toAciServerDetails(), new ActionParameters(GeneralActions.GetChildren.name()), processor);
 
                 return new Ports(responseData.getPort(), null, responseData.getServiceport());
             }
@@ -212,7 +200,7 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
 
     private boolean testServicePortConnection(final AciServerDetails serviceDetails, final AciService aciService) {
         try {
-            aciService.executeAction(serviceDetails, new AciParameters("getstatus"), new NoopProcessor());
+            aciService.executeAction(serviceDetails, new ActionParameters("getstatus"), new NoopProcessor());
             return true;
         } catch (final RuntimeException ignored) {
             return false;
@@ -339,7 +327,7 @@ public class ServerConfig extends SimpleComponent<ServerConfig> implements Optio
         // Community's ProductName is just IDOL, so we need to check the product type
         final GetVersionResponseData versionResponseData = aciService
                 .executeAction(toAciServerDetails(),
-                        new AciParameters(GeneralActions.GetVersion.name()),
+                        new ActionParameters(GeneralActions.GetVersion.name()),
                         processorFactory.getResponseDataProcessor(GetVersionResponseData.class));
 
         return new HashSet<>(Arrays.asList(versionResponseData.getProducttypecsv().split(",")));

@@ -16,11 +16,11 @@ package com.hp.autonomy.frontend.configuration.aci;
 
 import com.autonomy.aci.client.services.AciService;
 import com.autonomy.aci.client.transport.AciServerDetails;
-import com.autonomy.aci.client.util.AciParameters;
+import com.autonomy.aci.client.util.ActionParameters;
+import com.hp.autonomy.types.requests.idol.actions.status.StatusActions;
 import com.opentext.idol.types.marshalling.ProcessorFactory;
 import com.opentext.idol.types.responses.CommunityStatusResponseData;
 import com.opentext.idol.types.responses.SecurityType;
-import com.hp.autonomy.types.requests.idol.actions.status.StatusActions;
 
 import java.util.List;
 
@@ -36,7 +36,7 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     public List<SecurityType> getSecurityTypes(final AciServerDetails community) {
         try {
-            final CommunityStatusResponseData responseData = aciService.executeAction(community, new AciParameters(StatusActions.GetStatus.name()),
+            final CommunityStatusResponseData responseData = aciService.executeAction(community, new ActionParameters(StatusActions.GetStatus.name()),
                     processorFactory.getResponseDataProcessor(CommunityStatusResponseData.class));
             return responseData.getSecurityTypes().getSecurityType();
         } catch (final RuntimeException ignored) {
