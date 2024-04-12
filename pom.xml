@@ -37,9 +37,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.3</version>
                 <configuration>
                     <doclint>none</doclint>
-                    <isOffline>true</isOffline>
+                    <offline>true</offline>
                 </configuration>
             </plugin>
         </plugins>
