@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
 
 import static com.hp.autonomy.frontend.configuration.server.IsValidMatcher.valid;
 import static com.hp.autonomy.frontend.configuration.server.ServerConfigTest.IsAciParameter.aciParameter;
-import static com.hp.autonomy.frontend.configuration.server.SetContainingItems.isSetWithItems;
+import static com.hp.autonomy.frontend.testing.matchers.SetContainingItems.isSetWithItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;

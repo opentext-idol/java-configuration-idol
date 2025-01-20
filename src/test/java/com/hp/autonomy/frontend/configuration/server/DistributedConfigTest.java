@@ -21,6 +21,7 @@ import com.autonomy.aci.client.transport.AciServerDetails;
 import com.autonomy.nonaci.indexing.IndexingService;
 import com.hp.autonomy.frontend.configuration.ConfigurationComponentTest;
 import com.hp.autonomy.frontend.configuration.validation.ValidationResult;
+import com.hp.autonomy.frontend.testing.matchers.SetContainingItems;
 import com.opentext.idol.types.marshalling.ProcessorFactory;
 import com.opentext.idol.types.responses.GetVersionResponseData;
 import lombok.extern.slf4j.Slf4j;
@@ -45,9 +46,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SuppressWarnings("CastToConcreteClass")
 @Slf4j
